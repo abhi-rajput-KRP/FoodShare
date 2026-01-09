@@ -41,7 +41,6 @@ def post_food():
             blob.upload_from_file(photo, content_type=photo.content_type)
             blob.make_public()  # For display
             image_url = blob.public_url
-            # db.collection('food_posts').document({'post_id':post_id}).update({'image_url': image_url})
         else :
             image_url = None
     db.collection('food_posts').add({
@@ -53,7 +52,7 @@ def post_food():
         'food_types': food_types,
         'claimed': False,
         'timestamp': firestore.SERVER_TIMESTAMP,
-        'image_url' : image_url 
+        'image_url' : image_url
     })
     
     return jsonify({'success': True})
