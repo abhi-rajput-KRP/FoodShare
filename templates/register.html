@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NGO Registration</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* The asterisk (*) selects EVERYTHING. */
+        * {
+            /* This ensures padding doesn't make boxes wider than you set them. 
+               It makes sizing much easier to handle. */
+            box-sizing: border-box; 
+            
+            /* Remove default gaps browsers add automatically */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* "body" is the whole page background */
+        body {
+            font-family: 'Inter', sans-serif; /* Use the fancy font we imported */
+            background-color: #f3f4f6; /* Light gray background color */
+            
+            /* These 4 lines below are a trick to Center the card perfectly in the middle of the screen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Make body at least as tall as the screen (Viewport Height) */
+            
+            color: #1f2937; /* Dark gray text color (easier on eyes than pure black) */
+        }
+
+        /* This is the white box (Card) containing the form */
+        .registration-container {
+            background: white;
+            padding: 2.5rem; /* Space inside the box */
+            border-radius: 12px; /* Rounded corners */
+            /* This creates the subtle 3D shadow effect */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            
+            width: 100%; /* Take up full width available... */
+            max-width: 480px; /* ...but never get wider than 480 pixels */
+            margin: 1rem; /* Little bit of space outside the box so it doesn't touch edges */
+        }
+
+        /* Styling for the Header text "NGO Registration" */
+        h2 {
+            text-align: center; /* Center the text */
+            margin-bottom: 2rem; /* Push the form down a bit */
+            color: #111827; /* Very dark gray */
+        }
+
+        /* Styling for the wrapper around each label/input pair */
+        .form-group {
+            margin-bottom: 1.25rem; /* Space between each question */
+        }
+
+        /* Styling for the text labels (e.g., "NGO Name") */
+        label {
+            display: block; /* Make label take its own line */
+            margin-bottom: 0.5rem; /* Tiny space between label and input box */
+            font-weight: 500; /* Make text slightly bold */
+            font-size: 0.875rem; /* Make text slightly smaller than body text */
+            color: #374151;
+        }
+
+        /* Styling for the typing boxes */
+        input {
+            width: 100%; /* Input box stretches all the way across */
+            padding: 0.75rem 1rem; /* Space inside the typing box (Top/Bottom, Left/Right) */
+            border: 1px solid #d1d5db; /* Light gray border line */
+            border-radius: 8px; /* Rounded corners on the input */
+            font-size: 1rem;
+            outline: none; /* Removes the default ugly browser outline */
+        }
+
+        /* ":focus" happens when the user clicks inside the box to type */
+        input:focus {
+            border-color: #4f46e5; /* Border turns Blue */
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); /* Adds a soft blue glow */
+        }
+
+        /* Styling for the "Register" button */
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: #4f46e5; /* Blue background */
+            color: white; /* White text */
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600; /* Bold text */
+            cursor: pointer; /* Changes mouse cursor to a pointing hand */
+            margin-top: 1rem; /* Space above the button */
+        }
+
+        /* ":hover" happens when mouse goes over the button */
+        button:hover {
+            background-color: #4338ca; /* Make button slightly darker blue */
+        }
+
+        /* This is for Mobile Phones (screens smaller than 640px) */
+        @media (max-width: 640px) {
+            .registration-container {
+                padding: 1.5rem; /* Less padding on small screens to save space */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="registration-container">
+        <h2>NGO Registration</h2>
+
+        <form method="POST">
+            
+            <div class="form-group">
+                <label for="ngo_name">NGO Name</label>
+                
+                <input type="text" id="ngo_name" name="ngo_name" placeholder="e.g. Hope Foundation" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ngo_darpan_id">NGO Darpan ID</label>
+                <input type="text" id="ngo_darpan_id" name="ngo_darpan_id" placeholder="Unique ID provided by Darpan" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contact_name">Contact Person Name</label>
+                <input type="text" id="contact_name" name="contact_name" placeholder="Full Name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit">Create Account</button>
+        </form>
+    </div>
+
+</body>
+</html>

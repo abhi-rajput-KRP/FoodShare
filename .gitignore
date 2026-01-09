@@ -1,0 +1,21 @@
+# Python venv
+venv/
+flask/venv/
+flask/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model files (regenerate locally)
+# xgb_foodrisk_model.json
+# *.json  # Add Firebase creds if present
+
+# OS/Editor
+.DS_Store
+.vscode/
+.idea/

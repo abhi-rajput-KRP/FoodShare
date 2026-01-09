@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Food Donation</title>
+
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <form id="postForm" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Photo</label>
+            <input type="file" class="form-control" name="photo" id="photo" accept="image/*">
+        </div>
+    
+    
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" id="description" rows="3" placeholder="Fresh leftover biryani, veg/non-veg mix"></textarea>
+        </div>
+
+       <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault">
+  <label class="form-check-label" for="checkDefault">
+    Cooked rice dish
+  </label>
+  </div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault1">
+  <label class="form-check-label" for="checkDefault1">
+    Dairy-based curries
+  </label></div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault2">
+  <label class="form-check-label" for="checkDefault2">
+    Non-veg curries
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault3">
+  <label class="form-check-label" for="checkDefault3">
+   Dal/lentils
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault4">
+  <label class="form-check-label" for="checkDefault4">
+   Fresh breads
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault5">
+  <label class="form-check-label" for="checkDefault5">
+   Gravy-based veg curries
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault6">
+  <label class="form-check-label" for="checkDefault6">
+   Dry vegetable dishes
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault7">
+  <label class="form-check-label" for="checkDefault7">
+   Fried items
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault8">
+  <label class="form-check-label" for="checkDefault8">
+   Sweets
+  </label>
+</div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">Quantity</span>
+        <input type="text" class="form-control" name="quantity" id="quantity" required>
+    </div>
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">location</span>
+        <input type="text" class="form-control" name="location" id="location" required>
+    </div>
+
+    <div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" role="switch" id="fridgeSwitch">
+  <label class="form-check-label" for="fridgeSwitch">FOOD IS KEPT IN REFRIGERATOR</label>
+</div>
+
+
+    <div class="input-group mb-3">
+        <span class="input-group-text">temperature</span>
+        <input type="text" class="form-control" name="temperature" id="temperature" required>
+    </div>
+
+    
+    <button type="submit" class="btn btn-primary w-100">Post Food</button>
+    
+
+    </form> 
+
+
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Collect form data FIRST
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked:not(#fridgeSwitch)');  // Exclude switch
+    const food_types = Array.from(checkboxes).map(cb => cb.nextElementSibling.textContent.trim());
+    const fridgeSwitch = document.getElementById('fridgeSwitch').checked;
+    
+    // Temperature logic
+    let temp;
+    if (fridgeSwitch) {
+        temp = 0;  // Refrigerator temp
+    } else {
+        temp = parseFloat(document.getElementById('temperature').value) || 25;
+        if (!document.getElementById('temperature').value) {
+            alert('Please enter temperature (unless food is refrigerated)');
+            return;
+        }
+    }
+    
+    const hrs = 2;  // Fixed hours
+    let food_type_num = food_types.length > 0 ? 1 : 0;
+    
+    try {
+        // STEP 1: Predict spoilage
+        const predRes = await fetch('/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                food_type_array: food_types,
+                temperature: temp,
+                hours_already_spent: hrs
+            })
+        });
+        const prediction = await predRes.json();
+        
+        // Show risk & confirm (shows fridge status)
+        const fridgeStatus = fridgeSwitch ? '❄️ Refrigerator (0°C)' : `Temp: ${temp}°C`;
+        const risk = prediction.prediction === 0 ? '✅ Low risk' : '⚠️ High risk';
+        if (confirm(`Spoilage: ${risk}\nFood types: ${food_types.join(', ')}\n${fridgeStatus}\nPost anyway?`)) {
+            // STEP 2: Post to Firebase
+            const formData = new FormData();
+            formData.append('description', document.getElementById('description').value);
+            formData.append('quantity', document.getElementById('quantity').value);
+            formData.append('location', document.getElementById('location').value);
+            formData.append('temperature', temp);
+            formData.append('is_refrigerated', fridgeSwitch);  // Save fridge status
+            formData.append('food_types', JSON.stringify(food_types));
+            formData.append('prediction', prediction.prediction);
+            if (document.getElementById('photo').files[0]) formData.append('photo', document.getElementById('photo').files[0]);
+            
+            const postRes = await fetch('/post', { method: 'POST', body: formData });
+            if (postRes.ok) {
+                alert('✅ Posted with risk score!');
+                document.getElementById('postForm').reset();
+                document.getElementById('fridgeSwitch').checked = false;  // Reset switch
+            } else {
+                alert('❌ Post failed');
+            }
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+</script>
+
+  </body>
+</html>

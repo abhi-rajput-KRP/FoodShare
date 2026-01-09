@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surplus Food Exchange | Share More, Waste Less</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981; /* Emerald Green */
+            --primary-dark: #059669;
+            --secondary: #2c7be5; /* Professional Blue */
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            background-image: radial-gradient(#d1d5db 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .home-container {
+            max-width: 850px;
+            width: 90%;
+            margin: 40px auto;
+            text-align: center;
+            background: white;
+            padding: 60px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .badge {
+            background: #ecfdf5;
+            color: var(--primary-dark);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 15px;
+            color: #111827;
+        }
+
+        .tagline {
+            font-size: 1.15rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .action-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border-radius: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-ngo {
+            background-color: white;
+            color: var(--secondary);
+            border-color: #e5e7eb;
+        }
+
+        .btn-ngo:hover {
+            border-color: var(--secondary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(44, 123, 229, 0.1);
+        }
+
+        .btn-donor {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-donor:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .btn-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #f3f4f6;
+            padding-top: 40px;
+            gap: 20px;
+        }
+
+        .stat-item h3 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--primary-dark);
+        }
+
+        .stat-item p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .home-container { padding: 40px 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="home-container">
+    <span class="badge">Join 500+ Local Partners</span>
+    <h1>Surplus Food Exchange</h1>
+
+    <p class="tagline">
+        We bridge the gap between waste and want. Our platform connects local businesses with surplus food to organizations that serve those in need.
+    </p>
+
+    <div class="action-box">
+        <a href="/register" class="action-btn btn-ngo">
+            <span class="btn-title">I am an NGO</span>
+            <span class="btn-desc">Register to receive food donations</span>
+        </a>
+
+        <a href="food-posts" class="action-btn btn-donor">
+            <span class="btn-title">I have Food</span>
+            <span class="btn-desc">Post surplus from events or retail</span>
+        </a>
+    </div>
+
+    <div class
