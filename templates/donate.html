@@ -56,6 +56,7 @@
           <i class="bi bi-basket2-fill text-primary me-2"></i>FoodShare
         </span>
       </div>
+      <a href="/logout" style="margin-left: 5px;" ><button style="margin-top: 2px; width: 20%; align-self: flex-end;" class="btn btn-primary w-100 rounded-pill shadow-sm">Logout</button></a>
     </nav>
 
     <div class="container pb-5">
@@ -233,21 +234,6 @@
                       >
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="form-floating">
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="location"
-                        id="location"
-                        placeholder="Location"
-                        required
-                      />
-                      <label for="location"
-                        ><i class="bi bi-geo-alt me-1"></i> Location</label
-                      >
-                    </div>
-                  </div>
                 </div>
 
                 <div class="card bg-light border-0 mb-4">
@@ -300,6 +286,7 @@
                   <i class="bi bi-send-fill me-2"></i> Post Food
                 </button>
               </form>
+              <a href="/food_posts" ><button style="margin-top: 10px;" class="btn btn-primary w-100 rounded-pill shadow-sm">View Posts</button></a>
             </div>
           </div>
         </div>
@@ -391,10 +378,7 @@
                 "quantity",
                 document.getElementById("quantity").value
               );
-              formData.append(
-                "location",
-                document.getElementById("location").value
-              );
+              formData.append("risk", risk);
               formData.append("temperature", temp);
               formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
               formData.append("food_types", JSON.stringify(food_types));

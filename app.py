@@ -1,17 +1,17 @@
+from datetime import datetime
 from flask import Flask, render_template, request, url_for, redirect, jsonify,session
+import flask
 from xgboost import XGBClassifier
-import numpy as np,pandas as pd
 import firebase_admin
-from firebase_admin import credentials, firestore , storage , auth
+from firebase_admin import credentials, firestore , storage , auth 
 import json
 import uuid
+import requests
 from risk_calculation import risk
 from functools import wraps
-import os
-from datetime import timedelta
 
 app = Flask(__name__)
-# app.secret_key = 'your-secret-key-change-this'
+app.secret_key = 'your-secret-key-change-this'
 model = XGBClassifier()
 model._estimator_type = "classifier"
 model.load_model("xgb_foodrisk_model.json") 
@@ -29,18 +29,24 @@ def home():
 
 @app.route('/donor_register', methods=['GET','POST'])  
 def donor_register():
-    if request.method == 'POST':
+    if session.get('uid'):
+        return redirect(url_for('donate'))
+    elif request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         phone = request.form['phone']
         name = request.form['donor_name']
         location = request.form['donor_location']
         contact_name = request.form['contact_name']
+        session['location'] = location
+        session['phone'] = phone
         try:
             user = auth.create_user(
                 email=email,
                 password=password
             )
+            uid = user.uid
+            session['uid'] = uid
             db.collection('Donors').add({
             'email' : email, 
             'phone' : phone,
@@ -55,9 +61,41 @@ def donor_register():
 
 @app.route('/donor_login', methods=['GET','POST'])  
 def donor_login():
+    if session.get('uid'):
+        return redirect(url_for('donate'))
+    elif request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        API_KEY = "AIzaSyCBZO_CJPkxm-02FNw5uy96XILbHL9AJyo"
+
+        try:
+            # Call Firebase REST API for email/password sign-in
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
+            payload = {
+                "email": email,
+                "password": password,
+                "returnSecureToken": True
+            }
+            r = requests.post(url, json=payload)
+            data = r.json()
+
+            if "idToken" in data:
+                # Verify token with Firebase Admin SDK
+                decoded_token = auth.verify_id_token(data["idToken"])
+                uid = decoded_token["uid"]
+
+                #Store session
+                session["uid"] = uid
+                return redirect(url_for('donate'))
+            else:
+                return jsonify({"error": data}), 401
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
     return render_template('donor_login.html')
 
 @app.route('/donate', methods=['GET'])
+# @verify_firebase_token
 def donate():
     return render_template('donate.html')
 
@@ -81,12 +119,14 @@ def post_food():
         'post_id' : post_id, 
         'description': data['description'],
         'quantity': data['quantity'],
-        'location': data['location'],
+        'location': session['location'],
         'temperature': float(data['temperature']),
         'food_types': food_types,
         'claimed': False,
+        'risk': data['risk'],
         'timestamp': firestore.SERVER_TIMESTAMP,
-        'image_url' : image_url
+        'image_url' : image_url,
+        'phone' : session['phone']
     })
     
     return jsonify({'success': True})
@@ -105,7 +145,9 @@ def predict():
 
 @app.route('/ngo_register', methods=['GET','POST'])  # ADD HOME ROUTE
 def ngo_register():
-    if request.method == 'POST':
+    if session.get('uid'):
+        return redirect(url_for('food_posts'))
+    elif request.method == 'POST':
         email = request.form['email']
         darpan_id = request.form['ngo_darpan_id']
         password = request.form['password']
@@ -113,11 +155,15 @@ def ngo_register():
         name = request.form['ngo_name']
         location = request.form['ngo_location']
         contact_name = request.form['contact_name']
+        session['ngo_location'] = location
+        session['phone'] = phone
         try:
             user = auth.create_user(
                 email=email,
                 password=password
             )
+            uid = user.uid
+            session['uid'] = uid
             db.collection('NGOs').add({
             'email' : email, 
             'phone' : phone,
@@ -133,6 +179,37 @@ def ngo_register():
 
 @app.route('/ngo_login', methods=['GET','POST'])  # ADD HOME ROUTE
 def ngo_login():
+    if session.get('uid'):
+        return redirect(url_for('food_posts'))
+    elif request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        API_KEY = "AIzaSyCBZO_CJPkxm-02FNw5uy96XILbHL9AJyo"
+
+        try:
+            # Call Firebase REST API for email/password sign-in
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
+            payload = {
+                "email": email,
+                "password": password,
+                "returnSecureToken": True
+            }
+            r = requests.post(url, json=payload)
+            data = r.json()
+
+            if "idToken" in data:
+                # Verify token with Firebase Admin SDK
+                decoded_token = auth.verify_id_token(data["idToken"])
+                uid = decoded_token["uid"]
+
+                #Store session
+                session["uid"] = uid
+                return redirect(url_for('food_posts'))
+            else:
+                return jsonify({"error": data}), 401
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
     return render_template('ngo_login.html')
 
 
@@ -147,6 +224,11 @@ def food_posts():
         post['id'] = doc.id
         posts.append(post)
     return render_template('food_posts.html',posts=posts)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(debug=True) 
