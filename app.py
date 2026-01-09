@@ -69,5 +69,9 @@ def predict():
 
     return jsonify({"array":ft_array,"temperature": temp,"hours_already_spent": hrs,"prediction": pred})
 
+@app.route('/ngo')
+def ngo():
+    pass
+
 if __name__ == "__main__":
     app.run(debug=True) 
