@@ -1,18 +1,21 @@
-from flask import Flask, render_template, request, url_for, redirect, jsonify
+from flask import Flask, render_template, request, url_for, redirect, jsonify,session
 from xgboost import XGBClassifier
 import numpy as np,pandas as pd
 import firebase_admin
-from firebase_admin import credentials, firestore , storage
+from firebase_admin import credentials, firestore , storage , auth
 import json
 import uuid
 from risk_calculation import risk
+from functools import wraps
+import os
+from datetime import timedelta
 
 app = Flask(__name__)
-
+# app.secret_key = 'your-secret-key-change-this'
 model = XGBClassifier()
 model._estimator_type = "classifier"
 model.load_model("xgb_foodrisk_model.json") 
-
+# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 cred = credentials.Certificate("food-donation-bc43b-firebase-adminsdk-fbsvc-d3bbc78ab3.json")
 firebase_admin.initialize_app(cred, {
     'storageBucket': 'food-donation-bc43b.firebasestorage.app'
@@ -23,9 +26,21 @@ db = firestore.client()
 def home():
     return render_template('index.html')
 
-@app.route('/donor', methods=['GET'])  # ADD HOME ROUTE
-def form():
-    return render_template('form.html')
+@app.route('/auth')
+def auth():
+    return render_template('auth.html')
+
+@app.route('/donor_register', methods=['GET','POST'])  
+def donor_register():
+    return render_template('donor_register.html')
+
+@app.route('/donor_login', methods=['GET','POST'])  
+def donor_login():
+    return render_template('donor_login.html')
+
+@app.route('/donate', methods=['GET'])
+def donate():
+    return render_template('donate.html')
 
 @app.route('/post', methods=['POST'])   #**THEN**: JS calls /post (saves to Firebase)
 def post_food():
@@ -69,9 +84,13 @@ def predict():
 
     return jsonify({"array":ft_array,"temperature": temp,"hours_already_spent": hrs,"prediction": pred})
 
-@app.route('/ngo')
-def ngo():
-    pass
+@app.route('/ngo_register', methods=['GET','POST'])  # ADD HOME ROUTE
+def ngo_register():
+    return render_template('ngo_register.html')
+
+@app.route('/ngo_login', methods=['GET','POST'])  # ADD HOME ROUTE
+def ngo_login():
+    return render_template('ngo_login.html')
 
 if __name__ == "__main__":
     app.run(debug=True) 
