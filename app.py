@@ -26,12 +26,31 @@ db = firestore.client()
 def home():
     return render_template('index.html')
 
-@app.route('/auth')
-def auth():
-    return render_template('auth.html')
 
 @app.route('/donor_register', methods=['GET','POST'])  
 def donor_register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        phone = request.form['phone']
+        name = request.form['donor_name']
+        location = request.form['donor_location']
+        contact_name = request.form['contact_name']
+        try:
+            user = auth.create_user(
+                email=email,
+                password=password
+            )
+            db.collection('Donors').add({
+            'email' : email, 
+            'phone' : phone,
+            'name' : name,
+            'location' : location,
+            'contact_name' : contact_name
+        })
+            return redirect(url_for('donate'))
+        except Exception as e:
+            return f"An error occurred: {e}", 400
     return render_template('donor_register.html')
 
 @app.route('/donor_login', methods=['GET','POST'])  
@@ -86,11 +105,48 @@ def predict():
 
 @app.route('/ngo_register', methods=['GET','POST'])  # ADD HOME ROUTE
 def ngo_register():
+    if request.method == 'POST':
+        email = request.form['email']
+        darpan_id = request.form['ngo_darpan_id']
+        password = request.form['password']
+        phone = request.form['phone']
+        name = request.form['ngo_name']
+        location = request.form['ngo_location']
+        contact_name = request.form['contact_name']
+        try:
+            user = auth.create_user(
+                email=email,
+                password=password
+            )
+            db.collection('NGOs').add({
+            'email' : email, 
+            'phone' : phone,
+            'darpan_id' : darpan_id,
+            'name' : name,
+            'location' : location,
+            'contact_name' : contact_name
+        })
+            return redirect(url_for('food_posts'))
+        except Exception as e:
+            return f"An error occurred: {e}", 400
     return render_template('ngo_register.html')
 
 @app.route('/ngo_login', methods=['GET','POST'])  # ADD HOME ROUTE
 def ngo_login():
     return render_template('ngo_login.html')
+
+
+@app.route('/food_posts', methods=['GET'])
+def food_posts():
+    posts_ref = db.collection('food_posts')
+    docs = posts_ref.stream()
+    posts = []
+    print(posts)
+    for doc in docs:
+        post = doc.to_dict()
+        post['id'] = doc.id
+        posts.append(post)
+    return render_template('food_posts.html',posts=posts)
 
 if __name__ == "__main__":
     app.run(debug=True) 

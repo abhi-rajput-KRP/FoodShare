@@ -189,7 +189,7 @@
     <header>
       <h2>
         <span class="material-icons-round">volunteer_activism</span>
-        FoodConnect
+        FoodShare
       </h2>
     </header>
 
@@ -208,27 +208,27 @@
         {% for post in posts %}
         <div class="food-card">
           <div class="card-header">
-            <h3 class="food-title">{{ post[0] }}</h3>
-            <span class="food-type">{{ post[2] }}</span>
+            <h3 class="food-title"><img src="{{ post['image_url'] }}" alt="post" height="30%" width="80%"></h3>
+            <span class="food-type">{{ post['food_types'] }}</span>
           </div>
 
           <div class="card-body">
-            <p class="description">{{ post[1] }}</p>
+            <p class="description">{{ post['description'] }}</p>
 
             <div class="meta-info">
               <div class="meta-row">
                 <span class="material-icons-round">groups</span>
-                <span>Serves <strong>{{ post[3] }}</strong> people</span>
+                <span>Serves <strong>{{ post['quantity'] }}</strong> people</span>
               </div>
 
               <div class="meta-row">
                 <span class="material-icons-round">schedule</span>
-                <span>Prepared at: {{ post[4] }}</span>
+                <span>Prepared at: {{ post['timestamp'] }}</span>
               </div>
 
               <div class="meta-row">
                 <span class="material-icons-round">phone</span>
-                <span>{{ post[5] }}</span>
+                <span>{{ post['phone'] }}</span>
               </div>
             </div>
           </div>

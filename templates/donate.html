@@ -52,7 +52,7 @@
     <nav class="navbar navbar-light bg-white shadow-sm mb-4">
       <div class="container">
         <span class="navbar-brand mb-0 h1">
-          <i class="bi bi-basket2-fill text-primary me-2"></i>ShareFood
+          <i class="bi bi-basket2-fill text-primary me-2"></i>FoodShare
         </span>
       </div>
     </nav>
@@ -329,27 +329,6 @@
         .getElementById("postForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
-          const options = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0,
-          };
-          const success = (pos) => {
-            const crd = pos.coords;
-            document.getElementById(
-              "location"
-            ).value = `Lat: ${crd.latitude.toFixed(
-              5
-            )}, Lon: ${crd.longitude.toFixed(5)}`;
-          };
-          const error = (err) => {
-            console.warn(`ERROR(${err.code}): ${err.message}`);
-          };
-          location = navigator.geolocation.getCurrentPosition(
-            success,
-            error,
-            options
-          );
           // Collect form data FIRST
           const checkboxes = document.querySelectorAll(
             'input[type="checkbox"]:checked:not(#fridgeSwitch)'
