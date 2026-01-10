@@ -315,8 +315,7 @@ def claim():
             })
             if doc.to_dict()['post_id'] == post_id:
                 post = doc.to_dict()
-                print(post)
-                return jsonify({'phone':post['phone'],'Mail':post['email']}),200
+                return jsonify({'phone':post['phone'],'Mail':post['email'],'location':post['location']}),200
     
 
 @app.route('/logout')
