@@ -70,6 +70,10 @@ FoodShare/
 │   ├── index.html
 │   ├── ngo_login.html
 │   ├── ngo_register.html
+│   ├── donor_invalid.html
+│   ├── ngo_invalid.html
+│   ├── error.html
+│   ├── claim.html
 │   └── static/
 │       ├── favicon.ico
 │       └── style.css
