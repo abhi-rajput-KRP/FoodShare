@@ -289,7 +289,7 @@ def food_posts():
         for doc in docs:
             post = doc.to_dict()
             post['id'] = doc.id
-            if post['city'] == session['city']:
+            if post['city'].lower() == session['city'].lower():
                 posts.append(post)
         if request.method == 'POST':
             post_id = request.form['post_id']
