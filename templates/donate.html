@@ -225,7 +225,7 @@
                   </div>
                 </div>
 
-                <div class="row g-3 mb-4">
+                <div class="form-floating mb-4">
                   <div class="col-md-6">
                     <div class="form-floating">
                       <input
@@ -319,19 +319,19 @@
     <script>
       // --- UI UX Enhancement Script (Does not affect submission logic) ---
       // Toggle the temperature input availability based on the fridge switch
-      document
-        .getElementById("fridgeSwitch")
-        .addEventListener("change", function () {
-          const tempInput = document.getElementById("temperature");
-          if (this.checked) {
-            tempInput.value = "";
-            tempInput.disabled = true;
-            tempInput.required = false;
-          } else {
-            tempInput.disabled = false;
-            tempInput.required = true;
-          }
-        });
+      // document
+      //   .getElementById("fridgeSwitch")
+      //   .addEventListener("change", function () {
+      //     const tempInput = document.getElementById("temperature");
+      //     if (this.checked) {
+      //       tempInput.value = "";
+      //       tempInput.disabled = true;
+      //       tempInput.required = false;
+      //     } else {
+      //       tempInput.disabled = false;
+      //       tempInput.required = true;
+      //     }
+      //   });
 
       // --- Original Logic Preserved Below ---
       document
@@ -361,7 +361,7 @@
               .then((data) => data.temp)
             ;
           }
-          const hrs = 2; // Fixed hours
+          // const hrs = 2; // Fixed hours
           let food_type_num = food_types.length > 0 ? 1 : 0;
 
           // try {
@@ -390,27 +390,28 @@
         //         )}\n${fridgeStatus}\nPost anyway?`
         //       )
         //     ) {
-        //       // STEP 2: Post to Firebase
-        //       const formData = new FormData();
-        //       formData.append(
-        //         "description",
-        //         document.getElementById("description").value
-        //       );
-        //       formData.append(
-        //         "quantity",
-        //         document.getElementById("quantity").value
-        //       );
-        //       formData.append("risk", risk);
-        //       formData.append("temperature", temp);
-        //       formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
-        //       formData.append("food_types", JSON.stringify(food_types));
-        //       formData.append("prediction", prediction.prediction);
-        //       if (document.getElementById("photo").files[0])
-        //         formData.append(
-        //           "photo",
-        //           document.getElementById("photo").files[0]
-        //         );
-        try {
+              // STEP 2: Post to Firebase
+            try {
+              const formData = new FormData();
+              formData.append(
+                "description",
+                document.getElementById("description").value
+              );
+              formData.append(
+                "quantity",
+                document.getElementById("quantity").value
+              );
+              // formData.append("risk", risk);
+              formData.append("temperature", temp);
+              formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
+              formData.append("food_types", JSON.stringify(food_types));
+              formData.append("prepared_at", preparedStr);
+              // formData.append("prediction", prediction.prediction);
+              if (document.getElementById("photo").files[0])
+                formData.append(
+                  "photo",
+                  document.getElementById("photo").files[0]
+                );
               const postRes = await fetch("/post", {
                 method: "POST",
                 body: formData,

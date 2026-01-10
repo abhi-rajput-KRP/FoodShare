@@ -217,7 +217,7 @@
         <div class="food-card">
           <div class="card-header">
             <h3 class="food-title"><img src="{{ post['image_url'] }}" alt="post" width="90%"></h3>
-            <span class="food-type">Risk of spoilage : {{ post['risk'] }}</span>
+            <span class="food-type">Risk of spoilage : {{ post['prediction'] }}</span>
           </div>
 
           <div class="card-body">
@@ -229,6 +229,10 @@
                 <span>Serves <strong>{{ post['quantity'] }}</strong> people</span>
               </div>
 
+              <div class="meta-row">
+                <span class="material-icons-round">schedule</span>
+                <span>Prepared at: {{ post['prepared_at'] }}</span>
+              </div>
               <div class="meta-row">
                 <span class="material-icons-round">schedule</span>
                 <span>Posted at: {{ post['timestamp'] }}</span>

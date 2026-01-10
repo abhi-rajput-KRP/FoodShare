@@ -119,10 +119,10 @@ def post_food():
     food_types = json.loads(data.get('food_types', '[]'))  # Parse array
     is_refrigerated = data.get('is_refrigerated', 'false') == 'true'
     temp = float(data.get('temperature', 25))
-    hrs = data.get('hours_already_spent', 0)
+    # hrs = data.get('hours_already_spent', 0)
     ft_array=food_types
     prepared_str = data.get('prepared_at')
-    prepared_at = datetime.fromisoformat(prepared_str)  # naive datetime
+    prepared_at = datetime.fromisoformat(prepared_str)  # native datetime
     prepared_at = prepared_at.replace(tzinfo=timezone.utc)
     post_id = str(uuid.uuid4())
     if 'photo' in request.files:
@@ -146,10 +146,12 @@ def post_food():
         'is_refrigerated': is_refrigerated,
         'food_types': food_types,
         'claimed': False,
+        'prepared_at': prepared_at,
         'timestamp': firestore.SERVER_TIMESTAMP,
         'image_url' : image_url,
         'phone' : session['phone'],
-        'city' : session['city']
+        'city' : session['city'],
+        'email' : auth.get_user(session['uid']).email
     })
     
     snap = doc_ref.get()
@@ -161,12 +163,6 @@ def post_food():
 
     pred=risk(temp, hours, ft_array)
 
-    doc_ref.update({
-        'prediction': pred,
-        'hours_already_spent': hours,
-        'prepared_at':prepared_at
-    })
-    
     if pred==0:
         prediction_str="low"
     elif pred==1:
@@ -175,12 +171,17 @@ def post_food():
         prediction_str="high"
     elif pred==3:
         prediction_str="very high"
+    doc_ref.update({
+        'prediction': prediction_str,
+        'hours_already_spent': hours,
+        'prepared_at':prepared_at
+    })
 
     return jsonify({
         'success': True,
         'prediction': prediction_str,
         'hours': hours,
-    })
+    }) , 200
 
 @app.route('/temp', methods=['GET'])
 def get_temp():
@@ -305,25 +306,18 @@ def claim():
         post_id = request.values.get('post_id')
         posts_ref = db.collection('food_posts').where('post_id','==',post_id)
         docs = posts_ref.stream()
-        for doc in docs:
-            db.collection('food_posts').document(post_id).update({
-                'claimed': True
-            })
-        return redirect(url_for('claimed_food',post_id=post_id))
-    
-@app.route('/claimed_food', methods=['GET'])
-def claimed_food():
-    if session.get('uid') is None:
-        return redirect(url_for('ngo_login'))
-    else:
         post_id = request.values.get('post_id')
         posts_ref = db.collection('food_posts')
         docs = posts_ref.stream()
         for doc in docs:
+            db.collection('food_posts').document(post_id).update({
+                'claimed': True
+            })
             if doc.to_dict()['post_id'] == post_id:
                 post = doc.to_dict()
                 print(post)
-            return jsonify({'a':11}),200
+                return jsonify({'phone':post['phone'],'Mail':post['email']}),200
+    
 
 @app.route('/logout')
 def logout():
