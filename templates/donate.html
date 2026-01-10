@@ -411,57 +411,23 @@
         //           document.getElementById("photo").files[0]
         //         );
 
-        //       const postRes = await fetch("/post", {
-        //         method: "POST",
-        //         body: formData,
-        //       });
-        //       if (postRes.ok) {
-        //         alert("✅ Posted with risk score!");
-        //         document.getElementById("postForm").reset();
-        //         document.getElementById("fridgeSwitch").checked = false; // Reset switch
-        //         // Reset UI state for temperature
-        //       } else {
-        //         alert("❌ Post failed");
-        //       }
-        //     }
-        //   } catch (error) {
-        //     alert("Error: " + error.message);
-        //   }
-        // });
-        try {
-      const formData = new FormData();
-      formData.append("description", document.getElementById("description").value);
-      formData.append("quantity", document.getElementById("quantity").value);
-      formData.append("temperature", temp);
-      formData.append("is_refrigerated", fridgeSwitch);
-      formData.append("food_types", JSON.stringify(food_types));
-      formData.append("prepared_at", preparedStr);
-      if (document.getElementById("photo").files[0]) {
-        formData.append("photo", document.getElementById("photo").files[0]);
-      }
-
-      // ONLY ONE CALL: /post
-      const postRes = await fetch("/post", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await postRes.json();
-
-      if (postRes.ok) {
-        alert(
-          `✅ Posted!\nRisk: ${result.prediction}\nHours since post (approx): ${result.hours.toFixed(
-            2
-          )}`
-        );
-        document.getElementById("postForm").reset();
-        document.getElementById("fridgeSwitch").checked = false;
-      } else {
-        alert("❌ Post failed");
-      }
-    } catch (error) {
-      alert("Error: " + error.message);
-    }
-  });
+              const postRes = await fetch("/post", {
+                method: "POST",
+                body: formData,
+              });
+              if (postRes.ok) {
+                alert("✅ Posted");
+                document.getElementById("postForm").reset();
+                document.getElementById("fridgeSwitch").checked = false; // Reset switch
+                // Reset UI state for temperature
+              } else {
+                alert("❌ Post failed");
+              }
+            }
+          } catch (error) {
+            alert("Error: " + error.message);
+          }
+        });
     </script>
   </body>
 </html>
