@@ -217,7 +217,7 @@
         <div class="food-card">
           <div class="card-header">
             <h3 class="food-title"><img src="{{ post['image_url'] }}" alt="post" width="90%"></h3>
-            <span class="food-type">Is Clamed : {{ post['claimed'] }}</span>
+            <span class="food-type">Risk of spoilage : {{ post['risk'] }}</span>
           </div>
 
           <div class="card-body">
@@ -243,7 +243,11 @@
 
           <div class="card-footer">
             {% if post['claimed'] == false %}
-              <button id = "{{ post['id'] }}" class="claim-btn">Claim</button>
+            <form method="post">
+              <label for="post_id" style="display: none;"></label>
+              <input type="hidden" name="post_id" value="{{ post['id'] }}">
+              <button type="submit" class="claim-btn">Claim</button>
+            </form>
             {% else %}
               <button id = "{{ post['id'] }}" class="claim-btn" disabled>Already Claimed</button>
             {% endif %}

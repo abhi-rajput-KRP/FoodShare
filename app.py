@@ -1,6 +1,5 @@
 from datetime import datetime
 from flask import Flask, render_template, request, url_for, redirect, jsonify,session
-import flask
 from xgboost import XGBClassifier
 import firebase_admin
 from firebase_admin import credentials, firestore , storage , auth 
@@ -8,7 +7,6 @@ import json
 import uuid
 import requests
 from risk_calculation import risk
-from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
@@ -184,6 +182,7 @@ def ngo_register():
         session['ngo_location'] = location
         session['phone'] = phone
         session['city'] = city
+        session['darpan_id'] = darpan_id
         try:
             user = auth.create_user(
                 email=email,
@@ -242,6 +241,7 @@ def ngo_login():
                 session['ngo_location'] = ngo[0]['location']
                 session['phone'] = ngo[0]['phone']
                 session['city'] = ngo[0]['city']
+                session['darpan_id'] = ngo[0]['darpan_id']
                 return redirect(url_for('food_posts'))
             else:
                 return jsonify({"error": data}), 401
@@ -251,7 +251,7 @@ def ngo_login():
     return render_template('ngo_login.html')
 
 
-@app.route('/food_posts', methods=['GET'])
+@app.route('/food_posts', methods=['GET','POST'])
 def food_posts():
     if session.get('uid') is None:
         return redirect(url_for('ngo_login'))
@@ -265,7 +265,40 @@ def food_posts():
             post['id'] = doc.id
             if post['city'] == session['city']:
                 posts.append(post)
+        if request.method == 'POST':
+            post_id = request.form['post_id']
+            return redirect(url_for('claim',post_id=post_id))
         return render_template('food_posts.html',posts=posts)
+
+@app.route('/claim', methods=['GET','POST'])
+def claim():
+    if session.get('uid') is None:
+        return redirect(url_for('ngo_login'))
+    else:
+        if session.get('darpan_id') is None:
+            return jsonify({'error': 'Darpan ID not found.'}), 403
+        post_id = request.values.get('post_id')
+        posts_ref = db.collection('food_posts').where('post_id','==',post_id)
+        docs = posts_ref.stream()
+        for doc in docs:
+            db.collection('food_posts').document(post_id).update({
+                'claimed': True
+            })
+        return redirect(url_for('claimed_food',post_id=post_id))
+    
+@app.route('/claimed_food', methods=['GET'])
+def claimed_food():
+    if session.get('uid') is None:
+        return redirect(url_for('ngo_login'))
+    else:
+        post_id = request.values.get('post_id')
+        posts_ref = db.collection('food_posts')
+        docs = posts_ref.stream()
+        for doc in docs:
+            if doc.to_dict()['post_id'] == post_id:
+                post = doc.to_dict()
+                print(post)
+            return jsonify({'a':11}),200
 
 @app.route('/logout')
 def logout():
