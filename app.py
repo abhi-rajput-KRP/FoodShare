@@ -100,7 +100,7 @@ def donor_login():
                 session['city'] = donor[0]['city']
                 return redirect(url_for('donate'))
             else:
-                return jsonify({"error": data}), 401
+                return redirect(url_for('donor_invalid_login'))
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
@@ -270,7 +270,7 @@ def ngo_login():
                 session['darpan_id'] = ngo[0]['darpan_id']
                 return redirect(url_for('food_posts'))
             else:
-                return jsonify({"error": data}), 401
+                return redirect(url_for('ngo_invalid_login'))
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
@@ -317,6 +317,14 @@ def claim():
                 post = doc.to_dict()
                 return jsonify({'phone':post['phone'],'Mail':post['email'],'location':post['location']}),200
     
+
+@app.route('/ngo_invalid_login')
+def ngo_invalid_login():
+    return render_template('ngo_invalid.html')
+
+@app.route('/donor_invalid_login')
+def donor_invalid_login():
+    return render_template('donor_invalid.html')
 
 @app.route('/logout')
 def logout():
