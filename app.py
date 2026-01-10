@@ -37,9 +37,11 @@ def donor_register():
         phone = request.form['phone']
         name = request.form['donor_name']
         location = request.form['donor_location']
+        city = request.form['city']
         contact_name = request.form['contact_name']
         session['location'] = location
         session['phone'] = phone
+        session['city'] = city
         try:
             user = auth.create_user(
                 email=email,
@@ -52,7 +54,8 @@ def donor_register():
             'phone' : phone,
             'name' : name,
             'location' : location,
-            'contact_name' : contact_name
+            'contact_name' : contact_name,
+            'city' : city
         })
             return redirect(url_for('donate'))
         except Exception as e:
@@ -86,6 +89,16 @@ def donor_login():
 
                 #Store session
                 session["uid"] = uid
+                donor_ref = db.collection('Donors').where('email','==',email)
+                docs = donor_ref.stream()
+                donor = []
+                print(donor)
+                for doc in docs:
+                    post = doc.to_dict()
+                    donor.append(post)
+                session['location'] = donor[0]['location']
+                session['phone'] = donor[0]['phone']
+                session['city'] = donor[0]['city']
                 return redirect(url_for('donate'))
             else:
                 return jsonify({"error": data}), 401
@@ -95,9 +108,11 @@ def donor_login():
     return render_template('donor_login.html')
 
 @app.route('/donate', methods=['GET'])
-# @verify_firebase_token
 def donate():
-    return render_template('donate.html')
+    if session.get('uid') is None:
+        return redirect(url_for('ngo_login'))
+    else:
+        return render_template('donate.html')
 
 @app.route('/post', methods=['POST'])   #**THEN**: JS calls /post (saves to Firebase)
 def post_food():
@@ -126,10 +141,20 @@ def post_food():
         'risk': data['risk'],
         'timestamp': firestore.SERVER_TIMESTAMP,
         'image_url' : image_url,
-        'phone' : session['phone']
+        'phone' : session['phone'],
+        'city' : session['city']
     })
     
     return jsonify({'success': True})
+
+@app.route('/temp', methods=['GET'])
+def get_temp():
+    cords = requests.get("http://api.openweathermap.org/geo/1.0/direct?q=amroha&limit=5&appid=de5d8dce9f9e7fda3b2df501d0a84bc3")
+    lat = cords.json()[0]['lat']
+    lon = cords.json()[0]['lon']
+    conditions = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid=de5d8dce9f9e7fda3b2df501d0a84bc3")
+    temp = conditions.json()['main']['temp']-273.15
+    return jsonify({'temp': temp})
 
 @app.route("/predict", methods=["POST","GET"])
 def predict():
@@ -155,8 +180,10 @@ def ngo_register():
         name = request.form['ngo_name']
         location = request.form['ngo_location']
         contact_name = request.form['contact_name']
+        city = request.form['city']
         session['ngo_location'] = location
         session['phone'] = phone
+        session['city'] = city
         try:
             user = auth.create_user(
                 email=email,
@@ -170,8 +197,9 @@ def ngo_register():
             'darpan_id' : darpan_id,
             'name' : name,
             'location' : location,
-            'contact_name' : contact_name
-        })
+            'contact_name' : contact_name,
+            'city' : city
+            })
             return redirect(url_for('food_posts'))
         except Exception as e:
             return f"An error occurred: {e}", 400
@@ -204,6 +232,16 @@ def ngo_login():
 
                 #Store session
                 session["uid"] = uid
+                ngo_ref = db.collection('NGOs').where('email','==',email)
+                docs = ngo_ref.stream()
+                ngo = []
+                print(ngo)
+                for doc in docs:
+                    post = doc.to_dict()
+                    ngo.append(post)
+                session['ngo_location'] = ngo[0]['location']
+                session['phone'] = ngo[0]['phone']
+                session['city'] = ngo[0]['city']
                 return redirect(url_for('food_posts'))
             else:
                 return jsonify({"error": data}), 401
@@ -215,15 +253,19 @@ def ngo_login():
 
 @app.route('/food_posts', methods=['GET'])
 def food_posts():
-    posts_ref = db.collection('food_posts')
-    docs = posts_ref.stream()
-    posts = []
-    print(posts)
-    for doc in docs:
-        post = doc.to_dict()
-        post['id'] = doc.id
-        posts.append(post)
-    return render_template('food_posts.html',posts=posts)
+    if session.get('uid') is None:
+        return redirect(url_for('ngo_login'))
+    else:
+        posts_ref = db.collection('food_posts')
+        docs = posts_ref.stream()
+        posts = []
+        print(posts)
+        for doc in docs:
+            post = doc.to_dict()
+            post['id'] = doc.id
+            if post['city'] == session['city']:
+                posts.append(post)
+        return render_template('food_posts.html',posts=posts)
 
 @app.route('/logout')
 def logout():

@@ -242,7 +242,11 @@
           </div>
 
           <div class="card-footer">
-            <button id = "{{ post['id'] }}" class="claim-btn">Claim</button>
+            {% if post['claimed'] == false %}
+              <button id = "{{ post['id'] }}" class="claim-btn">Claim</button>
+            {% else %}
+              <button id = "{{ post['id'] }}" class="claim-btn" disabled>Already Claimed</button>
+            {% endif %}
           </div>
         </div>
         {% endfor %}
