@@ -410,7 +410,7 @@
         //           "photo",
         //           document.getElementById("photo").files[0]
         //         );
-
+        try {
               const postRes = await fetch("/post", {
                 method: "POST",
                 body: formData,
@@ -423,7 +423,6 @@
               } else {
                 alert("❌ Post failed");
               }
-            }
           } catch (error) {
             alert("Error: " + error.message);
           }
