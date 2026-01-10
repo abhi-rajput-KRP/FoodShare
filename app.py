@@ -302,7 +302,7 @@ def claim():
         return redirect(url_for('ngo_login'))
     else:
         if session.get('darpan_id') is None:
-            return jsonify({'error': 'Darpan ID not found.'}), 403
+            return render_template('error.html')
         post_id = request.values.get('post_id')
         posts_ref = db.collection('food_posts').where('post_id','==',post_id)
         docs = posts_ref.stream()
