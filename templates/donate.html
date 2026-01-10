@@ -242,6 +242,15 @@
                     </div>
                   </div>
                 </div>
+                <div class="form-floating mb-4">
+                  <input
+                    type="datetime-local"
+                    class="form-control"
+                    id="prepared_at"
+                    required
+                  />
+                  <label for="prepared_at">When was this prepared?</label>
+                </div>
 
                 <div class="card bg-light border-0 mb-4">
                   <div class="card-body">
@@ -336,6 +345,9 @@
           const food_types = Array.from(checkboxes).map((cb) =>
             cb.nextElementSibling.textContent.trim()
           );
+          const preparedStr = document.getElementById("prepared_at").value; // e.g. "2026-01-10T13:30"
+
+
           const fridgeSwitch = document.getElementById("fridgeSwitch").checked;
 
           // Temperature logic
@@ -352,70 +364,104 @@
           const hrs = 2; // Fixed hours
           let food_type_num = food_types.length > 0 ? 1 : 0;
 
-          try {
+          // try {
             // STEP 1: Predict spoilage
-            const predRes = await fetch("/predict", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                food_type_array: food_types,
-                temperature: temp,
-                hours_already_spent: hrs,
-              }),
-            });
-            const prediction = await predRes.json();
+        //     const predRes = await fetch("/predict", {
+        //       method: "POST",
+        //       headers: { "Content-Type": "application/json" },
+        //       body: JSON.stringify({
+        //         food_type_array: food_types,
+        //         temperature: temp,
+        //         hours_already_spent: hrs,
+        //       }),
+        //     });
+        //     const prediction = await predRes.json();
 
-            // Show risk & confirm (shows fridge status)
-            const fridgeStatus = fridgeSwitch
-              ? "❄️ Refrigerator (0°C)"
-              : `Temp: ${temp}°C`;
-            const risk =
-              prediction.prediction === 0 ? "✅ Low risk" : "⚠️ High risk";
-            if (
-              confirm(
-                `Spoilage: ${risk}\nFood types: ${food_types.join(
-                  ", "
-                )}\n${fridgeStatus}\nPost anyway?`
-              )
-            ) {
-              // STEP 2: Post to Firebase
-              const formData = new FormData();
-              formData.append(
-                "description",
-                document.getElementById("description").value
-              );
-              formData.append(
-                "quantity",
-                document.getElementById("quantity").value
-              );
-              formData.append("risk", risk);
-              formData.append("temperature", temp);
-              formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
-              formData.append("food_types", JSON.stringify(food_types));
-              formData.append("prediction", prediction.prediction);
-              if (document.getElementById("photo").files[0])
-                formData.append(
-                  "photo",
-                  document.getElementById("photo").files[0]
-                );
+        //     // Show risk & confirm (shows fridge status)
+        //     const fridgeStatus = fridgeSwitch
+        //       ? "❄️ Refrigerator (0°C)"
+        //       : `Temp: ${temp}°C`;
+        //     const risk =
+        //       prediction.prediction === 0 ? "✅ Low risk" : "⚠️ High risk";
+        //     if (
+        //       confirm(
+        //         `Spoilage: ${risk}\nFood types: ${food_types.join(
+        //           ", "
+        //         )}\n${fridgeStatus}\nPost anyway?`
+        //       )
+        //     ) {
+        //       // STEP 2: Post to Firebase
+        //       const formData = new FormData();
+        //       formData.append(
+        //         "description",
+        //         document.getElementById("description").value
+        //       );
+        //       formData.append(
+        //         "quantity",
+        //         document.getElementById("quantity").value
+        //       );
+        //       formData.append("risk", risk);
+        //       formData.append("temperature", temp);
+        //       formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
+        //       formData.append("food_types", JSON.stringify(food_types));
+        //       formData.append("prediction", prediction.prediction);
+        //       if (document.getElementById("photo").files[0])
+        //         formData.append(
+        //           "photo",
+        //           document.getElementById("photo").files[0]
+        //         );
 
-              const postRes = await fetch("/post", {
-                method: "POST",
-                body: formData,
-              });
-              if (postRes.ok) {
-                alert("✅ Posted with risk score!");
-                document.getElementById("postForm").reset();
-                document.getElementById("fridgeSwitch").checked = false; // Reset switch
-                // Reset UI state for temperature
-              } else {
-                alert("❌ Post failed");
-              }
-            }
-          } catch (error) {
-            alert("Error: " + error.message);
-          }
-        });
+        //       const postRes = await fetch("/post", {
+        //         method: "POST",
+        //         body: formData,
+        //       });
+        //       if (postRes.ok) {
+        //         alert("✅ Posted with risk score!");
+        //         document.getElementById("postForm").reset();
+        //         document.getElementById("fridgeSwitch").checked = false; // Reset switch
+        //         // Reset UI state for temperature
+        //       } else {
+        //         alert("❌ Post failed");
+        //       }
+        //     }
+        //   } catch (error) {
+        //     alert("Error: " + error.message);
+        //   }
+        // });
+        try {
+      const formData = new FormData();
+      formData.append("description", document.getElementById("description").value);
+      formData.append("quantity", document.getElementById("quantity").value);
+      formData.append("temperature", temp);
+      formData.append("is_refrigerated", fridgeSwitch);
+      formData.append("food_types", JSON.stringify(food_types));
+      formData.append("prepared_at", preparedStr);
+      if (document.getElementById("photo").files[0]) {
+        formData.append("photo", document.getElementById("photo").files[0]);
+      }
+
+      // ONLY ONE CALL: /post
+      const postRes = await fetch("/post", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await postRes.json();
+
+      if (postRes.ok) {
+        alert(
+          `✅ Posted!\nRisk: ${result.prediction}\nHours since post (approx): ${result.hours.toFixed(
+            2
+          )}`
+        );
+        document.getElementById("postForm").reset();
+        document.getElementById("fridgeSwitch").checked = false;
+      } else {
+        alert("❌ Post failed");
+      }
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  });
     </script>
   </body>
 </html>

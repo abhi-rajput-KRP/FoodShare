@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime,timezone
+from google.cloud import firestore as gcf_firestore 
 from flask import Flask, render_template, request, url_for, redirect, jsonify,session
 import flask
 from xgboost import XGBClassifier
@@ -118,6 +119,13 @@ def donate():
 def post_food():
     data = request.form
     food_types = json.loads(data.get('food_types', '[]'))  # Parse array
+    is_refrigerated = data.get('is_refrigerated', 'false') == 'true'
+    temp = float(data.get('temperature', 25))
+    hrs = data.get('hours_already_spent', 0)
+    ft_array=food_types
+    prepared_str = data.get('prepared_at')
+    prepared_at = datetime.fromisoformat(prepared_str)  # naive datetime
+    prepared_at = prepared_at.replace(tzinfo=timezone.utc)
     post_id = str(uuid.uuid4())
     if 'photo' in request.files:
         photo = request.files['photo']
@@ -130,22 +138,51 @@ def post_food():
             image_url = blob.public_url
         else :
             image_url = None
-    db.collection('food_posts').add({
+    doc_ref = db.collection('food_posts').document(post_id)
+    doc_ref.set({
         'post_id' : post_id, 
         'description': data['description'],
         'quantity': data['quantity'],
         'location': session['location'],
-        'temperature': float(data['temperature']),
+        'temperature': temp,
+        'is_refrigerated': is_refrigerated,
         'food_types': food_types,
         'claimed': False,
-        'risk': data['risk'],
         'timestamp': firestore.SERVER_TIMESTAMP,
         'image_url' : image_url,
         'phone' : session['phone'],
         'city' : session['city']
     })
     
-    return jsonify({'success': True})
+    snap = doc_ref.get()
+    doc_data = snap.to_dict()
+    ts = doc_data['timestamp']                       
+    created_at = ts.replace(tzinfo=timezone.utc)
+    delta = created_at - prepared_at
+    hours = delta.total_seconds() / 3600.0
+
+    pred=risk(temp, hours, ft_array)
+
+    doc_ref.update({
+        'prediction': pred,
+        'hours_already_spent': hours,
+        'prepared_at':prepared_at
+    })
+    
+    if pred==0:
+        prediction_str="low"
+    elif pred==1:
+        prediction_str="medium"
+    elif pred==2:
+        prediction_str="high"
+    elif pred==3:
+        prediction_str="very high"
+
+    return jsonify({
+        'success': True,
+        'prediction': prediction_str,
+        'hours': hours,
+    })
 
 @app.route('/temp', methods=['GET'])
 def get_temp():
@@ -155,18 +192,6 @@ def get_temp():
     conditions = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid=de5d8dce9f9e7fda3b2df501d0a84bc3")
     temp = conditions.json()['main']['temp']-273.15
     return jsonify({'temp': temp})
-
-@app.route("/predict", methods=["POST","GET"])
-def predict():
-    data = request.json
-    temp = data.get('temperature', 25)
-    hrs = data.get('hours_already_spent', 0)
-    ft_array=data.get('food_type_array',9)
-    
-    pred=risk(temp, hrs, ft_array)
-    print(f"array:{ft_array},temperature: {temp},hours_already_spent: {hrs},prediction: {pred}")
-
-    return jsonify({"array":ft_array,"temperature": temp,"hours_already_spent": hrs,"prediction": pred})
 
 @app.route('/ngo_register', methods=['GET','POST'])  # ADD HOME ROUTE
 def ngo_register():
