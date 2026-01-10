@@ -315,7 +315,7 @@ def claim():
             })
             if doc.to_dict()['post_id'] == post_id:
                 post = doc.to_dict()
-                return jsonify({'phone':post['phone'],'Mail':post['email'],'location':post['location']}),200
+                return render_template('claim.html',post=post)
     
 
 @app.route('/ngo_invalid_login')

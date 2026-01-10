@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Failed</title>
+    <title>Claim</title>
     <style>
         * {
             margin: 0;
@@ -60,12 +60,6 @@
             75% { transform: translateX(10px); }
         }
 
-        .error-icon svg {
-            width: 40px;
-            height: 40px;
-            stroke: #dc2626;
-        }
-
         h1 {
             color: #1f2937;
             font-size: 24px;
@@ -73,61 +67,25 @@
             margin-bottom: 12px;
         }
 
-        .error-message {
-            background: #fee2e2;
-            border-left: 4px solid #dc2626;
-            color: #991b1b;
+        .data {
+            background: #dce6ec;
             padding: 16px;
             border-radius: 8px;
             margin-bottom: 24px;
             font-size: 14px;
             line-height: 1.6;
         }
-
-        .error-message strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 15px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="error-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </div>
+        <h1>Connect to Donor</h1>
 
-        <h1>Login Failed</h1>
-
-        <div class="error-message">
-            <strong>Invalid Credentials</strong>
-            The email or password you entered is incorrect. Please try again.
+        <div class="data">
+            Location: {{ post.location }}<br>
+            Phone: {{ post.phone }}<br>
+            Mail: {{ post.email }}
         </div>
-            <a href="/donor_login"><button class="btn">Try Again</button></a>
     </div>
 </body>
 </html>
