@@ -4,8 +4,6 @@
 <h3>🔗 Live Demo: </h3>
 [Visit Application](https://foodshare-donation.onrender.com)
 
-<h3>🛠 Status: TechSprint Hackathon / project prototype </h3>
-
 <h2>FEATURES</h2>
 
 * <h3>Donor dashboard</h3>
