@@ -8,6 +8,7 @@ import json
 import uuid
 import requests
 from risk_calculation import risk
+import dotenv
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
@@ -15,9 +16,9 @@ model = XGBClassifier()
 model._estimator_type = "classifier"
 model.load_model("xgb_foodrisk_model.json") 
 # app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
-cred = credentials.Certificate("food-donation-bc43b-firebase-adminsdk-fbsvc-d3bbc78ab3.json")
+cred = credentials.Certificate(dotenv.get_key(".env", "FIREBASE_SDK"))
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'food-donation-bc43b.firebasestorage.app'
+    'storageBucket': dotenv.get_key(".env", "STORAGE_BUCKET")
 })
 db = firestore.client() 
 
@@ -68,7 +69,7 @@ def donor_login():
     elif request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        API_KEY = "AIzaSyCBZO_CJPkxm-02FNw5uy96XILbHL9AJyo"
+        API_KEY = dotenv.get_key(".env", "FIREBASE_API_KEY")
 
         try:
             # Call Firebase REST API for email/password sign-in
@@ -185,10 +186,11 @@ def post_food():
 
 @app.route('/temp', methods=['GET'])
 def get_temp():
-    cords = requests.get("http://api.openweathermap.org/geo/1.0/direct?q=amroha&limit=5&appid=de5d8dce9f9e7fda3b2df501d0a84bc3")
+    op_wheather_api_key = dotenv.get_key(".env", "OP_WEATHER_API_KEY")
+    cords = requests.get(f"http://api.openweathermap.org/geo/1.0/direct?q=amroha&limit=5&appid={op_wheather_api_key}")
     lat = cords.json()[0]['lat']
     lon = cords.json()[0]['lon']
-    conditions = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid=de5d8dce9f9e7fda3b2df501d0a84bc3")
+    conditions = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={op_wheather_api_key}")
     temp = conditions.json()['main']['temp']-273.15
     return jsonify({'temp': temp})
 
@@ -237,7 +239,7 @@ def ngo_login():
     elif request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        API_KEY = "AIzaSyCBZO_CJPkxm-02FNw5uy96XILbHL9AJyo"
+        API_KEY = dotenv.get_key(".env", "FIREBASE_API_KEY")
 
         try:
             # Call Firebase REST API for email/password sign-in

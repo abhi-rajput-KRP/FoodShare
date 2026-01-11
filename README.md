@@ -54,12 +54,7 @@ FoodShare/
 ├── app.py
 ├── food_dataset_preparation.ipynb
 ├── food_risk_dataset.csv
-├── preview/
-│   ├── app_creds.png
-│   ├── app_creds1.png
-│   ├── app_creds2.png
-│   ├── app_creds3.png
-│   └── image.png
+├── .env
 ├── requirements.txt
 ├── risk_calculation.py
 ├── templates/
@@ -99,14 +94,20 @@ source venv/bin/activate
 ### 2. Install Dependencies
 `pip install -r requirements.txt`
 
-<!-- ### 3. Configure APIs and SDKs in app.py
+### 3. Configure enviornment variables
+```
+create .env file 
 
-![app.py-cerds](preview/app_creds.png)<br><br>
-![app.py-cerds](preview/app_creds1.png)<br><br>
-![app.py-cerds](preview/app_creds2.png)<br><br>
-![app.py-cerds](preview/app_creds3.png)<br><br> -->
+Add feilds 
 
-### 3. Run the Application
+FIREBASE_SDK = "path to your firbase servise account sdk json"
+STORAGE_BUCKET = "name of your firebase storage bucket"
+FIREBASE_API_KEY = "firebase api key"
+OP_WEATHER_API_KEY = "open whether api keay"
+```
+
+
+### 4. Run the Application
 `python app.py`
 
 <h2>How the Risk Model Works </h2>
