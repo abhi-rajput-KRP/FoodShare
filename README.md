@@ -100,7 +100,7 @@ create .env file
 
 Add feilds 
 
-FIREBASE_SDK = "path to your firbase servise account sdk json"
+FIREBASE_SDK = "path to your firbase service account sdk json"
 STORAGE_BUCKET = "name of your firebase storage bucket"
 FIREBASE_API_KEY = "firebase api key"
 OP_WEATHER_API_KEY = "open whether api keay"
