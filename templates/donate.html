@@ -4,7 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Food Donation</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link
+      rel="icon"
+      href="https://firebasestorage.googleapis.com/v0/b/food-donation-bc43b.firebasestorage.app/o/favicon.ico?alt=media&token=56a306dc-3749-4d56-962b-dcfbb59cce10"
+      type="image/x-icon"
+    />
 
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
@@ -347,83 +351,80 @@
           );
           const preparedStr = document.getElementById("prepared_at").value; // e.g. "2026-01-10T13:30"
 
-
           const fridgeSwitch = document.getElementById("fridgeSwitch").checked;
 
           // Temperature logic
           let temp;
           if (fridgeSwitch) {
             temp = 0; // Refrigerator temp
-          } 
-          else {
+          } else {
             temp = await fetch("/temp")
               .then((res) => res.json())
-              .then((data) => data.temp)
-            ;
+              .then((data) => data.temp);
           }
           // const hrs = 2; // Fixed hours
           let food_type_num = food_types.length > 0 ? 1 : 0;
 
           // try {
-            // STEP 1: Predict spoilage
-        //     const predRes = await fetch("/predict", {
-        //       method: "POST",
-        //       headers: { "Content-Type": "application/json" },
-        //       body: JSON.stringify({
-        //         food_type_array: food_types,
-        //         temperature: temp,
-        //         hours_already_spent: hrs,
-        //       }),
-        //     });
-        //     const prediction = await predRes.json();
+          // STEP 1: Predict spoilage
+          //     const predRes = await fetch("/predict", {
+          //       method: "POST",
+          //       headers: { "Content-Type": "application/json" },
+          //       body: JSON.stringify({
+          //         food_type_array: food_types,
+          //         temperature: temp,
+          //         hours_already_spent: hrs,
+          //       }),
+          //     });
+          //     const prediction = await predRes.json();
 
-        //     // Show risk & confirm (shows fridge status)
-        //     const fridgeStatus = fridgeSwitch
-        //       ? "❄️ Refrigerator (0°C)"
-        //       : `Temp: ${temp}°C`;
-        //     const risk =
-        //       prediction.prediction === 0 ? "✅ Low risk" : "⚠️ High risk";
-        //     if (
-        //       confirm(
-        //         `Spoilage: ${risk}\nFood types: ${food_types.join(
-        //           ", "
-        //         )}\n${fridgeStatus}\nPost anyway?`
-        //       )
-        //     ) {
-              // STEP 2: Post to Firebase
-            try {
-              const formData = new FormData();
+          //     // Show risk & confirm (shows fridge status)
+          //     const fridgeStatus = fridgeSwitch
+          //       ? "❄️ Refrigerator (0°C)"
+          //       : `Temp: ${temp}°C`;
+          //     const risk =
+          //       prediction.prediction === 0 ? "✅ Low risk" : "⚠️ High risk";
+          //     if (
+          //       confirm(
+          //         `Spoilage: ${risk}\nFood types: ${food_types.join(
+          //           ", "
+          //         )}\n${fridgeStatus}\nPost anyway?`
+          //       )
+          //     ) {
+          // STEP 2: Post to Firebase
+          try {
+            const formData = new FormData();
+            formData.append(
+              "description",
+              document.getElementById("description").value
+            );
+            formData.append(
+              "quantity",
+              document.getElementById("quantity").value
+            );
+            // formData.append("risk", risk);
+            formData.append("temperature", temp);
+            formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
+            formData.append("food_types", JSON.stringify(food_types));
+            formData.append("prepared_at", preparedStr);
+            // formData.append("prediction", prediction.prediction);
+            if (document.getElementById("photo").files[0])
               formData.append(
-                "description",
-                document.getElementById("description").value
+                "photo",
+                document.getElementById("photo").files[0]
               );
-              formData.append(
-                "quantity",
-                document.getElementById("quantity").value
-              );
-              // formData.append("risk", risk);
-              formData.append("temperature", temp);
-              formData.append("is_refrigerated", fridgeSwitch); // Save fridge status
-              formData.append("food_types", JSON.stringify(food_types));
-              formData.append("prepared_at", preparedStr);
-              // formData.append("prediction", prediction.prediction);
-              if (document.getElementById("photo").files[0])
-                formData.append(
-                  "photo",
-                  document.getElementById("photo").files[0]
-                );
-              const postRes = await fetch("/post", {
-                method: "POST",
-                body: formData,
-              });
-              if (postRes.ok) {
-                alert("✅ Posted");
-                document.getElementById("postForm").reset();
-                document.getElementById("fridgeSwitch").checked = false; // Reset switch
-                // Reset UI state for temperature
-              } else {
-                alert("❌ Post failed");
-              }
+            const postRes = await fetch("/post", {
+              method: "POST",
+              body: formData,
+            });
+            if (postRes.ok) {
+              alert("✅ Posted");
+              document.getElementById("postForm").reset();
+              document.getElementById("fridgeSwitch").checked = false; // Reset switch
+              // Reset UI state for temperature
+            } else {
+              alert("❌ Post failed");
+            }
           } catch (error) {
             alert("Error: " + error.message);
           }

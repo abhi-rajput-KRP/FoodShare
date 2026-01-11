@@ -1,133 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Failed</title>
+    <link
+      rel="icon"
+      href="https://firebasestorage.googleapis.com/v0/b/food-donation-bc43b.firebasestorage.app/o/favicon.ico?alt=media&token=56a306dc-3749-4d56-962b-dcfbb59cce10"
+      type="image/x-icon"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f3f4f6;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #f3f4f6;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
 
-        .container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 400px;
-            width: 100%;
-            animation: slideIn 0.4s ease-out;
-        }
+      .container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 400px;
+        width: 100%;
+        animation: slideIn 0.4s ease-out;
+      }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-        .error-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            background: #fee;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: shake 0.5s ease-in-out;
-        }
+      .error-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        background: #fee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: shake 0.5s ease-in-out;
+      }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
         }
+        25% {
+          transform: translateX(-10px);
+        }
+        75% {
+          transform: translateX(10px);
+        }
+      }
 
-        .error-icon svg {
-            width: 40px;
-            height: 40px;
-            stroke: #dc2626;
-        }
+      .error-icon svg {
+        width: 40px;
+        height: 40px;
+        stroke: #dc2626;
+      }
 
-        h1 {
-            color: #1f2937;
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
+      h1 {
+        color: #1f2937;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 12px;
+      }
 
-        .error-message {
-            background: #fee2e2;
-            border-left: 4px solid #dc2626;
-            color: #991b1b;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 14px;
-            line-height: 1.6;
-        }
+      .error-message {
+        background: #fee2e2;
+        border-left: 4px solid #dc2626;
+        color: #991b1b;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
 
-        .error-message strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 15px;
-        }
+      .error-message strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 15px;
+      }
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background-color: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        background-color: #4f46e5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      }
 
-        .btn:active {
-            transform: translateY(0);
-        }
+      .btn:active {
+        transform: translateY(0);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="error-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </div>
+      <div class="error-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </div>
 
-        <h1>Login Failed</h1>
+      <h1>Login Failed</h1>
 
-        <div class="error-message">
-            <strong>Invalid Credentials</strong>
-            The email or password you entered is incorrect. Please try again.
-        </div>
-            <a href="/donor_login"><button class="btn">Try Again</button></a>
+      <div class="error-message">
+        <strong>Invalid Credentials</strong>
+        The email or password you entered is incorrect. Please try again.
+      </div>
+      <a href="/donor_login"><button class="btn">Try Again</button></a>
     </div>
-</body>
+  </body>
 </html>
