@@ -13,7 +13,7 @@ __pycache__/
 # xgb_foodrisk_model.json
 # *.json  # Add Firebase creds if present
 .env
-food-donation-bc43b-firebase-adminsdk-fbsvc-d3bbc78ab3.json
+food-donation-bc43b-firebase-adminsdk-fbsvc-870740c8ed.json
 
 # OS/Editor
 .DS_Store

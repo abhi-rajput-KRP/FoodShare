@@ -9,13 +9,14 @@ import uuid
 import requests
 from risk_calculation import risk
 import dotenv
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 model = XGBClassifier()
 model._estimator_type = "classifier"
 model.load_model("xgb_foodrisk_model.json") 
-# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 cred = credentials.Certificate(dotenv.get_key(".env", "FIREBASE_SDK"))
 firebase_admin.initialize_app(cred, {
     'storageBucket': dotenv.get_key(".env", "STORAGE_BUCKET")
