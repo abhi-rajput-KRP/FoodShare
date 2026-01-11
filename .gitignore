@@ -12,6 +12,8 @@ __pycache__/
 # Model files (regenerate locally)
 # xgb_foodrisk_model.json
 # *.json  # Add Firebase creds if present
+.env
+food-donation-bc43b-firebase-adminsdk-fbsvc-d3bbc78ab3.json
 
 # OS/Editor
 .DS_Store
