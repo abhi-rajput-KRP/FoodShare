@@ -59,10 +59,14 @@ FoodShare/
 │   ├── donate.html
 │   ├── donor_login.html
 │   ├── donor_register.html
+│   ├── donor_dashboard.html
+│   ├── profile_donor.html
+│   ├── my_donation.html
 │   ├── food_posts.html
 │   ├── index.html
 │   ├── ngo_login.html
 │   ├── ngo_register.html
+│   ├── profile_ngo.html
 │   ├── donor_invalid.html
 │   ├── ngo_invalid.html
 │   ├── error.html
