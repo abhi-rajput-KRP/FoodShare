@@ -132,7 +132,8 @@ def donor_dashboard():
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
-        posts.append(data)
+        if data['claimed']==True:
+            posts.append(data)
     if request.method == 'POST' and 'post_now_button' in request.form:
         return redirect(url_for('donate')) 
     
@@ -171,7 +172,8 @@ def profile_donor():
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
-        posts.append(data)
+        if data['claimed']==True:
+            posts.append(data)
     
     serves=0
     for i in posts:
