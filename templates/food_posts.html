@@ -235,10 +235,75 @@
         color: var(--text-light);
         margin-bottom: 1rem;
       }
+          .menu_svg {
+      display: none;
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1248px) {
+      .profile-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .profile-header-top {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .edit-btn {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row-custom {
+        grid-template-columns: 1fr;
+      }
+
+      .container-main {
+        padding: 1rem;
+      }
+
+      .profile-content {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 660px) {
+      .sidebar {
+        display: none;
+        position: absolute;
+        padding-top: 30px;
+        z-index:990;
+      }
+      .stat-card {
+        width: 80vw;
+      }
+      .menu_svg {
+        display: block;
+        z-index:999;
+      }
+      .material-icons-round{
+        margin-left: 30px;
+      }
+    }
     </style>
   </head>
   <body>
     <!-- Sidebar on LEFT -->
+    <svg id = "menu-icon" class="menu_svg" xmlns="www.w3.org" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
     <aside class="sidebar">
       <div class="p-3 d-flex align-items-center">
         <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">
@@ -252,9 +317,6 @@
 
       <div class="px-3 mb-3">
       <a href="/donate">
-        <button class="btn btn-success w-100 fw-semibold">
-          + Create Donation
-        </button>
       </a>
       </div>
 
@@ -267,13 +329,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/my_donations"><i class="bi bi-gift me-2"></i>My Donations</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link active" href="/food_posts"><i class="bi bi-basket me-2"></i>Food Posts</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#"><i class="bi bi-building me-2"></i>NGOs Directory</a>
           </li>
         </ul>
 
@@ -291,7 +347,7 @@
         </div>
         <div>
           <div class="fw-semibold">{{ donor.name }}</div>
-          <small class="badge bg-success-subtle text-success">Donor</small>
+          <small class="badge bg-success-subtle text-success">NGO</small>
         </div>
       </div>
     </aside>
@@ -374,4 +430,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
+<script>
+  const menuIcon = document.getElementById('menu-icon');
+  const sidebar = document.querySelector('.sidebar');
+
+  menuIcon.addEventListener('click', () => {
+    if (sidebar.style.display === 'block') {
+      sidebar.style.display = 'none';
+    } else {
+      sidebar.style.display = 'block';
+    }
+  });
+</script>
 </html>

@@ -28,7 +28,7 @@ def home():
     return render_template('index.html')
 
 @app.route('/dashboard_donor',methods=['GET','POST'])
-def donor():
+def donor_dashboard():
     if not session.get('uid'):
         return redirect(url_for('donor_login'))
     email = session['email']
@@ -96,7 +96,7 @@ def donor_register():
             'contact_name' : contact_name,
             'city' : city
         })
-            return redirect(url_for('donor'))
+            return redirect(url_for('donor_dashboard'))
         except Exception as e:
             return f"An error occurred: {e}", 400
     return render_template('donor_register.html')
@@ -139,7 +139,7 @@ def donor_login():
                 session['phone'] = donor[0]['phone']
                 session['city'] = donor[0]['city']
                 session['email']=email
-                return redirect(url_for('donor'))
+                return redirect(url_for('donor_dashboard'))
             else:
                 return redirect(url_for('donor_invalid_login'))
 
@@ -337,7 +337,6 @@ def ngo_login():
                 ngo_ref = db.collection('NGOs').where('email','==',email)
                 docs = ngo_ref.stream()
                 ngo = []
-                print(ngo)
                 for doc in docs:
                     post = doc.to_dict()
                     ngo.append(post)
@@ -345,6 +344,7 @@ def ngo_login():
                 session['phone'] = ngo[0]['phone']
                 session['city'] = ngo[0]['city']
                 session['darpan_id'] = ngo[0]['darpan_id']
+                session['email']=email
                 return redirect(url_for('food_posts'))
             else:
                 return redirect(url_for('ngo_invalid_login'))
@@ -392,7 +392,6 @@ def food_posts():
         posts_ref = db.collection('food_posts')
         docs = posts_ref.stream()
         posts = []
-        print(posts)
         for doc in docs:
             post = doc.to_dict()
             post['id'] = doc.id
