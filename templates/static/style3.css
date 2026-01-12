@@ -1,0 +1,107 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f6faf7;
+}
+
+/* Header */
+.header {
+    background: #e7f8ed;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header input {
+    width: 300px;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+}
+
+.icons {
+    font-size: 18px;
+}
+
+.badge {
+    background: orange;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+/* Banner */
+.banner {
+    background: linear-gradient(to right, #2ecc71, #3be87b);
+    padding: 40px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar {
+    font-size: 50px;
+    background: #eafaf0;
+    padding: 20px;
+    border-radius: 50%;
+}
+
+.badge-green {
+    background: #2ecc71;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.edit-btn {
+    margin-left: auto;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+}
+
+/* Content */
+.container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    padding: 30px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.card.wide {
+    grid-column: span 1;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.stat {
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.green { background: #eafaf0; color: #2ecc71; }
+.purple { background: #f3edff; color: #7d3cff; }
+.orange { background: #fff0e6; color: #ff7a00; }
+.blue { background: #eaf1ff; color: #2457ff; }
