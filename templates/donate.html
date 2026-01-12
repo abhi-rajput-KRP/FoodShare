@@ -233,7 +233,7 @@
                   <div class="col-md-6">
                     <div class="form-floating">
                       <input
-                        type="text"
+                        type="number"
                         class="form-control"
                         name="quantity"
                         id="quantity"
@@ -241,7 +241,7 @@
                         required
                       />
                       <label for="quantity"
-                        ><i class="bi bi-box-seam me-1"></i> Quantity</label
+                        ><i class="bi bi-box-seam me-1"></i>How many people can it serve ?</label
                       >
                     </div>
                   </div>
@@ -299,6 +299,7 @@
 
                 <button
                   type="submit"
+                  onclick="alert('Wait Until you get success message ...')"
                   class="btn btn-primary w-100 rounded-pill shadow-sm"
                 >
                   <i class="bi bi-send-fill me-2"></i> Post Food
@@ -321,22 +322,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-      // --- UI UX Enhancement Script (Does not affect submission logic) ---
-      // Toggle the temperature input availability based on the fridge switch
-      // document
-      //   .getElementById("fridgeSwitch")
-      //   .addEventListener("change", function () {
-      //     const tempInput = document.getElementById("temperature");
-      //     if (this.checked) {
-      //       tempInput.value = "";
-      //       tempInput.disabled = true;
-      //       tempInput.required = false;
-      //     } else {
-      //       tempInput.disabled = false;
-      //       tempInput.required = true;
-      //     }
-      //   });
-
       // --- Original Logic Preserved Below ---
       document
         .getElementById("postForm")
@@ -364,34 +349,6 @@
           }
           // const hrs = 2; // Fixed hours
           let food_type_num = food_types.length > 0 ? 1 : 0;
-
-          // try {
-          // STEP 1: Predict spoilage
-          //     const predRes = await fetch("/predict", {
-          //       method: "POST",
-          //       headers: { "Content-Type": "application/json" },
-          //       body: JSON.stringify({
-          //         food_type_array: food_types,
-          //         temperature: temp,
-          //         hours_already_spent: hrs,
-          //       }),
-          //     });
-          //     const prediction = await predRes.json();
-
-          //     // Show risk & confirm (shows fridge status)
-          //     const fridgeStatus = fridgeSwitch
-          //       ? "❄️ Refrigerator (0°C)"
-          //       : `Temp: ${temp}°C`;
-          //     const risk =
-          //       prediction.prediction === 0 ? "✅ Low risk" : "⚠️ High risk";
-          //     if (
-          //       confirm(
-          //         `Spoilage: ${risk}\nFood types: ${food_types.join(
-          //           ", "
-          //         )}\n${fridgeStatus}\nPost anyway?`
-          //       )
-          //     ) {
-          // STEP 2: Post to Firebase
           try {
             const formData = new FormData();
             formData.append(

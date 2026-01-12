@@ -191,36 +191,6 @@
         color: var(--accent);
       }
 
-      /* Button Styling */
-      .card-footer {
-        padding: 20px;
-        background-color: #fafafa;
-        border-top: 1px solid #eee;
-      }
-
-      .claim-btn {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-        background-color: var(--primary);
-        color: white;
-      }
-
-      .claim-btn:hover {
-        background-color: var(--primary-dark);
-      }
-
-      .claim-btn:disabled {
-        background-color: #e0e0e0;
-        color: #9aa0a6;
-        cursor: not-allowed;
-      }
-
       /* Empty State */
       .empty-state {
         text-align: center;
@@ -432,7 +402,6 @@
           <div class="food-card">
             <div class="card-header">
               <h3 class="food-title"><img src="{{ post['image_url'] }}" alt="post" width="90%"></h3>
-              <span class="food-type">Risk: {{ post['prediction'] }}</span>
             </div>
 
             <div class="card-body">
@@ -443,21 +412,11 @@
                   <span class="material-icons-round">groups</span>
                   <span>Quantity: <strong>{{ post['quantity'] }}</strong></span>
                 </div>
-
                 <div class="meta-row">
-                  <span class="material-icons-round">schedule</span>
-                  <span>Prepared: {{ post['prepared_at'] }}</span>
-                </div>
-                <div class="meta-row">
-                  <span class="material-icons-round">access_time</span>
-                  <span>Posted: {{ post['timestamp'] }}</span>
+                  <span class="material-icons-round">groups</span>
+                  <span>Claimed By: <strong>{{ post['claimed_by'] }}</strong></span>
                 </div>
               </div>
-            </div>
-
-            <div class="card-footer">
-              <form method="post">
-                <input type="hidden" name="post_id" value="{{ post['id'] }}">
             </div>
           </div>
           {% endfor %}

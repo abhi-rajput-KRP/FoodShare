@@ -128,7 +128,136 @@
       background-color: var(--primary-dark);
       border-color: var(--primary-dark);
     }
-        .menu_svg {
+    .menu_svg {
+      display: none;
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      cursor: pointer;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+        width: 100%;
+      }
+
+      .food-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+      }
+
+          /* Card Styling */
+      .food-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .food-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        padding: 20px 20px 10px;
+      }
+
+      .food-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--secondary);
+      }
+
+      .food-type {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-top: 8px;
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .card-body {
+        padding: 10px 20px;
+        flex-grow: 1;
+      }
+
+      .description {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+      }
+
+      .meta-info {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+      }
+
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .claim-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .claim-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .claim-btn:disabled {
+        background-color: #e0e0e0;
+        color: #9aa0a6;
+        cursor: not-allowed;
+      }
+      .card-footer {
+        padding: 20px;
+        background-color: #fafafa;
+        border-top: 1px solid #eee;
+      }
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+      }
+      .menu_svg {
       display: none;
       position: absolute;
       top: 1rem;
@@ -294,7 +423,7 @@
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <p class="text-muted mb-1">Total Donations</p>
-              <h3 class="fw-bold mb-2">{{ posts|length }}</h3>
+              <h3 class="fw-bold mb-2">{{ stats.total_donations }}</h3>
             </div>
           </div>
         </div>
@@ -317,7 +446,40 @@
           </div>
         </div>
       </div>
+      <div class="container">
+        
+<!-- DONATION FILTER BAR -->
+        {% if reqs %}
+        <div class="food-grid">
+          {% for req in reqs %}
+          <div class="food-card">
+            <div class="card-header">
+              <h3 class="food-title"><img src="{{ req.get('image_url') }}" alt="post" width="90%"></h3>
+            </div>
 
+            <div class="card-body">
+              <p class="description">{{ req.get('description') }}</p>
+              <div class="meta-info">
+                <div class="meta-row">
+                  <span class="material-icons-round">groups</span>
+                  <span>Claim request by : <strong>{{ req.get('requested_by')['name'] }}</strong></span>
+                  <span>Contact Number : <strong>{{ req.get('requested_by')['phone'] }}</strong></span>
+                </div>
+                
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <form method="post">
+                <input type="hidden" name="req_id" value="{{ req.get('post_id') }}">
+                <button type="submit" class="claim-btn">Accept</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
 
     </div>
   </div>

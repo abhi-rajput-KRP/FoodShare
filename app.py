@@ -3,7 +3,7 @@ from google.cloud import firestore as gcf_firestore
 from flask import Flask, render_template, request, url_for, redirect, jsonify,session
 from xgboost import XGBClassifier
 import firebase_admin
-from firebase_admin import credentials, firestore , storage , auth 
+from firebase_admin import credentials, firestore , storage , auth ,messaging
 import json
 import uuid
 import requests
@@ -94,15 +94,12 @@ def donor_login():
 
                 #Store session
                 session["uid"] = uid
-                donor_ref = db.collection('Donors').where('email','==',email)
-                docs = donor_ref.stream()
-                donor = []
-                for doc in docs:
-                    post = doc.to_dict()
-                    donor.append(post)
-                session['location'] = donor[0]['location']
-                session['phone'] = donor[0]['phone']
-                session['city'] = donor[0]['city']
+                donor_ref = db.collection('Donors').where('email','==',email).limit(1)
+                docs = list(donor_ref.stream())
+                donor = docs[0].to_dict()
+                session['location'] = donor['location']
+                session['phone'] = donor['phone']
+                session['city'] = donor['city']
                 session['email']=email
                 return redirect(url_for('donor_dashboard'))
             else:
@@ -128,14 +125,11 @@ def donor_dashboard():
     else:
         donor_data = {}
     posts=[]
-    posts_ref = db.collection('food_posts').where('email', '==', email)
+    posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
-        if data['claimed']==True:
-            posts.append(data)
-    if request.method == 'POST' and 'post_now_button' in request.form:
-        return redirect(url_for('donate')) 
+        posts.append(data)
     
     serves=0
     for i in posts:
@@ -143,11 +137,25 @@ def donor_dashboard():
     points=serves*10
     
     stats = {
+        "total_donations": len(posts),
         "points_earned": points,
         "people_fed": serves,
     }
-    
-    return render_template('donor_dashboard.html',donor=donor_data,posts=posts,stats=stats)
+    req_ref = db.collection('food_posts').where('email','==',email)
+    docs = req_ref.stream()
+    req_ref = db.collection('food_posts')
+    docs = req_ref.stream()
+    reqs = []
+    for doc in docs:
+        if doc.to_dict().get('requested_by') is not None and doc.to_dict().get('claimed')==False:
+            reqs.append(doc)
+    if request.method == 'POST':
+        req_id = request.form.get('req_id')
+        db.collection('food_posts').document(req_id).update({
+            'claimed': True
+        })
+        return redirect(url_for('donor_dashboard'))
+    return render_template('donor_dashboard.html',donor=donor_data,stats=stats,reqs=reqs)
 
 
 @app.route('/profile_donor')
@@ -168,12 +176,11 @@ def profile_donor():
         donor_data = {}
     
     posts=[]
-    posts_ref = db.collection('food_posts').where('email', '==', email)
+    posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
-        if data['claimed']==True:
-            posts.append(data)
+        posts.append(data)
     
     serves=0
     for i in posts:
@@ -199,17 +206,12 @@ def my_donations():
         if donor_docs:
             donor_data = donor_docs[0].to_dict()
 
-        posts_ref = db.collection('food_posts')
+        posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
         docs = posts_ref.stream()
         donations = []
         for doc in docs:
             post = doc.to_dict()
-            post['id'] = doc.id
-            if post['email'] == session['email']:
-                donations.append(post)
-        if request.method == 'POST':
-            post_id = request.form['post_id']
-            return redirect(url_for('claim',post_id=post_id))
+            donations.append(post)
         return render_template('my_donation.html',posts=donations,donor=donor_data)
 
 @app.route('/donate', methods=['GET'])
@@ -322,6 +324,8 @@ def ngo_register():
         session['phone'] = phone
         session['city'] = city
         session['darpan_id'] = darpan_id
+        session['ngo_name'] = name
+        session['email']=email
         try:
             user = auth.create_user(
                 email=email,
@@ -370,16 +374,14 @@ def ngo_login():
 
                 #Store session
                 session["uid"] = uid
-                ngo_ref = db.collection('NGOs').where('email','==',email)
-                docs = ngo_ref.stream()
-                ngo = []
-                for doc in docs:
-                    post = doc.to_dict()
-                    ngo.append(post)
-                session['ngo_location'] = ngo[0]['location']
-                session['phone'] = ngo[0]['phone']
-                session['city'] = ngo[0]['city']
-                session['darpan_id'] = ngo[0]['darpan_id']
+                ngo_ref = db.collection('NGOs').where('email','==',email).limit(1)
+                docs = list(ngo_ref.stream())
+                ngo = docs[0].to_dict()
+                session['ngo_location'] = ngo['location']
+                session['phone'] = ngo['phone']
+                session['city'] = ngo['city']
+                session['darpan_id'] = ngo['darpan_id']
+                session['ngo_name'] = ngo['name']
                 session['email']=email
                 return redirect(url_for('food_posts'))
             else:
@@ -429,7 +431,7 @@ def profile_ngo():
             ngo_data = ngo_docs[0].to_dict()
         return render_template('profile_ngo.html', ngo=ngo_data)
 
-@app.route('/claim', methods=['GET','POST'])
+@app.route('/claim', methods=['GET'])
 def claim():
     if session.get('uid') is None:
         return redirect(url_for('ngo_login'))
@@ -439,16 +441,12 @@ def claim():
         post_id = request.values.get('post_id')
         posts_ref = db.collection('food_posts').where('post_id','==',post_id)
         docs = posts_ref.stream()
-        post_id = request.values.get('post_id')
-        posts_ref = db.collection('food_posts')
-        docs = posts_ref.stream()
         for doc in docs:
             db.collection('food_posts').document(post_id).update({
-                'claimed': True
+                'requested_by': {'name':session['ngo_name'], 'phone': session['phone']}
             })
-            if doc.to_dict()['post_id'] == post_id:
-                post = doc.to_dict()
-                return render_template('claim.html',post=post)
+            post = doc.to_dict()
+            return render_template('claim.html',post=post)
     
 
 @app.route('/ngo_invalid_login')
