@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>User Profile - FoodShare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary: #2ecc71;
+      --primary-dark: #27ae60;
+      --secondary: #34495e;
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-light: #7f8c8d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    header h2 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      background-color: var(--card-bg);
+      border-right: 1px solid #e0e0e0;
+    }
+
+    .sidebar .nav-link {
+      color: #5f6b7a;
+      border-radius: 12px;
+      padding: 0.5rem 0.75rem;
+      font-weight: 500;
+    }
+
+    .sidebar .nav-link.active {
+      background-color: #e6f8ed;
+      color: var(--primary-dark);
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .container-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      width: 100%;
+    }
+
+    .profile-header-card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .gradient-header {
+      height: 150px;
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      position: relative;
+    }
+
+    .camera-btn {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background-color: var(--card-bg);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-content {
+      padding: 2rem;
+      position: relative;
+      margin-top: -80px;
+    }
+
+    .profile-top {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      align-items: flex-start;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: var(--card-bg);
+      border: 4px solid var(--card-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: var(--primary);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .avatar-camera {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      border: 3px solid var(--card-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 0.8rem;
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      gap: 2rem;
+    }
+
+    .profile-name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+
+    .role-badge {
+      display: inline-block;
+      background-color: rgba(46, 204, 113, 0.1);
+      color: var(--primary-dark);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .profile-bio {
+      color: var(--text-light);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-top: 0.5rem;
+    }
+
+    .edit-btn {
+      background-color: var(--card-bg);
+      border: 1px solid #e0e0e0;
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .edit-btn:hover {
+      background-color: #f5f5f5;
+    }
+
+    .card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+
+    .card-header {
+      background: none;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .contact-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      align-items: center;
+    }
+
+    .contact-item:last-child {
+      border-bottom: none;
+    }
+
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      background-color: rgba(46, 204, 113, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .contact-label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    .contact-value {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%);
+    }
+
+    .stat-card.purple {
+      background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(155, 89, 182, 0.05) 100%);
+    }
+
+    .stat-card.blue {
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(52, 152, 219, 0.05) 100%);
+    }
+
+    .stat-card.orange {
+      background: linear-gradient(135deg, rgba(230, 126, 34, 0.1) 0%, rgba(230, 126, 34, 0.05) 100%);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card.purple .stat-value {
+      color: #9b59b6;
+    }
+
+    .stat-card.blue .stat-value {
+      color: #3498db;
+    }
+
+    .stat-card.orange .stat-value {
+      color: #e67e22;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .progress-section {
+      border-top: 1px solid #f0f0f0;
+      padding-top: 1.5rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .progress-label {
+      color: var(--text-light);
+    }
+
+    .progress-value {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+      border-radius: 10px;
+    }
+
+    .progress-message {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    .row-custom {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .profile-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .profile-header-top {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .edit-btn {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row-custom {
+        grid-template-columns: 1fr;
+      }
+
+      .container-main {
+        padding: 1rem;
+      }
+
+      .profile-content {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="p-3 d-flex align-items-center">
+      <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">
+        <i class="bi bi-heart-fill"></i>
+      </div>
+      <div>
+        <h6 class="mb-0 fw-bold">FoodShare</h6>
+        <small class="text-muted">Share the love</small>
+      </div>
+    </div>
+
+    <div class="px-3 mb-3">
+    <a href="/donate">
+      <button class="btn btn-success w-100 fw-semibold">
+        + Create Donation
+      </button>
+    </a>
+    </div>
+
+    <nav class="px-2">
+      <p class="text-uppercase text-muted small mb-1">Main menu</p>
+      <ul class="nav nav-pills flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link" href="/dashboard_donor">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/my_donations"><i class="bi bi-gift me-2"></i>My Donations</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/food_posts"><i class="bi bi-basket me-2"></i>Food Posts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><i class="bi bi-building me-2"></i>NGOs Directory</a>
+        </li>
+      </ul>
+
+      <p class="text-uppercase text-muted small mb-1">Account</p>
+      <ul class="nav nav-pills flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link active" href="/profile_donor"><i class="bi bi-person me-2"></i>Profile</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="mt-auto p-3 border-top d-flex align-items-center">
+      <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+        {{ donor.name[0] if donor.name else 'U' }}
+      </div>
+      <div>
+        <div class="fw-semibold">{{ donor.name }}</div>
+        <small class="badge bg-success-subtle text-success">Donor</small>
+      </div>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <header>
+      <h2>
+        <span class="material-icons-round">volunteer_activism</span>
+        FoodShare
+      </h2>
+      <a href="/logout">
+        <button style="background-color: #27ae60;" class="btn btn-primary rounded-pill shadow-sm">
+          Logout
+        </button>
+      </a>
+    </header>
+
+  <div class="container-main">
+
+    <!-- PROFILE HERO -->
+    <div class="card profile-header-card">
+      <div class="gradient-header"></div>
+
+      <div class="profile-content">
+        <div class="profile-top">
+
+          <div class="avatar">
+            <i class="bi bi-person"></i>
+            <div class="avatar-camera">
+              <i class="bi bi-camera"></i>
+            </div>
+          </div>
+
+          <div class="profile-info">
+            <div class="profile-header-top">
+              <div>
+                <h2 class="profile-name">
+                  {{ donor.name }}
+                  <br>
+                  <span class="role-badge">Donor</span>
+                </h2>
+              </div>
+              <button class="edit-btn">
+                <i class="bi bi-pencil me-1"></i>Edit Profile
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="row-custom">
+
+      <!-- CONTACT INFO -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Contact Information</h5>
+        </div>
+        <div class="card-body">
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-envelope"></i></div>
+            <div>
+              <div class="contact-label">Email</div>
+              <div class="contact-value">{{ donor.email }}</div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-telephone"></i></div>
+            <div>
+              <div class="contact-label">Phone</div>
+              <div class="contact-value">{{ donor.phone }}</div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-geo-alt"></i></div>
+            <div>
+              <div class="contact-label">Location</div>
+              <div class="contact-value">{{ donor.location }}</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- IMPACT -->
+      <div class="card">
+        <div class="card-body">
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{ posts|length }}</div>
+              <div class="stat-label">Total Donations</div>
+            </div>
+
+            <div class="stat-card purple">
+              <div class="stat-value">{{ stats.people_fed }}</div>
+              <div class="stat-label">People Fed</div>
+            </div>
+
+            <div class="stat-card orange">
+              <div class="stat-value">{{ stats.points }}</div>
+              <div class="stat-label">Points Earned</div>
+            </div>
+
+            
+          </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+</body>
+</html>
+    
