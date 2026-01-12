@@ -235,7 +235,7 @@
         color: var(--text-light);
         margin-bottom: 1rem;
       }
-          .menu_svg {
+      .menu_svg {
       display: none;
       position: absolute;
       top: 1rem;
@@ -315,38 +315,24 @@
         </div>
       </div>
 
-      <div class="px-3 mb-3">
-      <a href="/donate">
-      </a>
-      </div>
-
       <nav class="px-2">
-        <p class="text-uppercase text-muted small mb-1">Main menu</p>
+        <p class="text-uppercase text-muted small mb-1">Menu</p>
         <ul class="nav nav-pills flex-column mb-3">
-          <li class="nav-item">
-            <a class="nav-link" href="/dashboard_donor">
-              <i class="bi bi-speedometer2 me-2"></i>Dashboard
-            </a>
-          </li>
           <li class="nav-item">
             <a class="nav-link active" href="/food_posts"><i class="bi bi-basket me-2"></i>Food Posts</a>
           </li>
-        </ul>
-
-        <p class="text-uppercase text-muted small mb-1">Account</p>
-        <ul class="nav nav-pills flex-column mb-3">
           <li class="nav-item">
-            <a class="nav-link" href="/profile_donor"><i class="bi bi-person me-2"></i>Profile</a>
+            <a class="nav-link" href="/profile_ngo"><i class="bi bi-person me-2"></i>Profile</a>
           </li>
         </ul>
       </nav>
 
       <div class="mt-auto p-3 border-top d-flex align-items-center">
         <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
-          {{ donor.name[0]}}
+          {{ ngo.name[0]}}
         </div>
         <div>
-          <div class="fw-semibold">{{ donor.name }}</div>
+          <div class="fw-semibold">{{ ngo.name }}</div>
           <small class="badge bg-success-subtle text-success">NGO</small>
         </div>
       </div>
@@ -421,7 +407,7 @@
           <span class="material-icons-round empty-icon">soup_kitchen</span>
           <h3>No excess food available right now</h3>
           <p style="color: var(--text-light)">
-            Check back later or enable notifications to get alerted.
+            Check back later .
           </p>
         </div>
         {% endif %}
