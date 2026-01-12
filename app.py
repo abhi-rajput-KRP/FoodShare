@@ -27,11 +27,48 @@ db = firestore.client()
 def home():
     return render_template('index.html')
 
+@app.route('/dashboard_donor',methods=['GET','POST'])
+def donor():
+    if not session.get('uid'):
+        return redirect(url_for('donor_login'))
+    email = session['email']
+    print("Email in session:", email)
+    donor_query = db.collection('Donors').where('email', '==', email).limit(1)
+    donor_docs = list(donor_query.stream())
+
+    if donor_docs:
+        donor_data = donor_docs[0].to_dict()
+        print("Donor data:", donor_data)
+    else:
+        donor_data = {}
+        print("No donor found for email:", email)
+    posts=[]
+    posts_ref = db.collection('food_posts').where('email', '==', email)
+    docs = posts_ref.stream()
+    for doc in docs:
+        data = doc.to_dict()
+        posts.append(data)
+    print(posts)
+    if request.method == 'POST' and 'post_now_button' in request.form:
+        return redirect(url_for('donate')) 
+    
+    serves=0
+    for i in posts:
+        serves=serves+int(i['quantity'])
+    points=serves*10
+    
+    stats = {
+        "feedback_received": 38,
+        "points_earned": points,
+        "people_fed": serves,
+    }
+    
+    return render_template('donor_dashboard.html',donor=donor_data,posts=posts,stats=stats)
 
 @app.route('/donor_register', methods=['GET','POST'])  
 def donor_register():
     if session.get('uid'):
-        return redirect(url_for('donate'))
+        return redirect(url_for('donor'))
     elif request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
@@ -40,6 +77,7 @@ def donor_register():
         location = request.form['donor_location']
         city = request.form['city']
         contact_name = request.form['contact_name']
+        session['email']=email
         session['location'] = location
         session['phone'] = phone
         session['city'] = city
@@ -58,7 +96,7 @@ def donor_register():
             'contact_name' : contact_name,
             'city' : city
         })
-            return redirect(url_for('donate'))
+            return redirect(url_for('donor'))
         except Exception as e:
             return f"An error occurred: {e}", 400
     return render_template('donor_register.html')
@@ -66,7 +104,7 @@ def donor_register():
 @app.route('/donor_login', methods=['GET','POST'])  
 def donor_login():
     if session.get('uid'):
-        return redirect(url_for('donate'))
+        return redirect(url_for('donor'))
     elif request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
@@ -100,7 +138,8 @@ def donor_login():
                 session['location'] = donor[0]['location']
                 session['phone'] = donor[0]['phone']
                 session['city'] = donor[0]['city']
-                return redirect(url_for('donate'))
+                session['email']=email
+                return redirect(url_for('donor'))
             else:
                 return redirect(url_for('donor_invalid_login'))
 
@@ -114,6 +153,41 @@ def donate():
         return redirect(url_for('ngo_login'))
     else:
         return render_template('donate.html')
+    
+@app.route('/profile_donor')
+def profile_donor():
+    if not session.get('uid'):
+        return redirect(url_for('donor_login'))
+    
+    email = session['email']
+    
+    # Fetch donor data from Firestore
+    donor_query = db.collection('Donors').where('email', '==', email).limit(1)
+    donor_docs = list(donor_query.stream())
+    
+    if donor_docs:
+        donor_data = donor_docs[0].to_dict()
+    else:
+        donor_data = {}
+    
+    posts=[]
+    posts_ref = db.collection('food_posts').where('email', '==', email)
+    docs = posts_ref.stream()
+    for doc in docs:
+        data = doc.to_dict()
+        posts.append(data)
+    
+    serves=0
+    for i in posts:
+        serves=serves+int(i['quantity'])
+    points=serves*10
+    
+    stats = {
+        "people_fed":serves,
+        "points":points,
+    }
+    return render_template('profile_donor.html', donor=donor_data, stats=stats,posts=posts)
+
 
 @app.route('/post', methods=['POST'])   #**THEN**: JS calls /post (saves to Firebase)
 def post_food():
@@ -279,12 +353,42 @@ def ngo_login():
             return jsonify({"error": str(e)}), 500
     return render_template('ngo_login.html')
 
+@app.route('/my_donations', methods=['GET','POST'])
+def my_donations():
+    if session.get('uid') is None:
+        return redirect(url_for('ngo_login'))
+    else:
+        email = session['email']
+        donor_query = db.collection('Donors').where('email', '==', email).limit(1)
+        donor_docs = list(donor_query.stream())
+        if donor_docs:
+            donor_data = donor_docs[0].to_dict()
+
+        posts_ref = db.collection('food_posts')
+        docs = posts_ref.stream()
+        donations = []
+        for doc in docs:
+            post = doc.to_dict()
+            post['id'] = doc.id
+            if post['email'] == session['email']:
+                donations.append(post)
+        if request.method == 'POST':
+            post_id = request.form['post_id']
+            return redirect(url_for('claim',post_id=post_id))
+        return render_template('my_donation.html',posts=donations,donor=donor_data)
 
 @app.route('/food_posts', methods=['GET','POST'])
 def food_posts():
     if session.get('uid') is None:
         return redirect(url_for('ngo_login'))
     else:
+        email = session['email']
+        donor_query = db.collection('Donors').where('email', '==', email).limit(1)
+        donor_docs = list(donor_query.stream())
+
+        if donor_docs:
+            donor_data = donor_docs[0].to_dict()
+        print("Donor data:", donor_data)
         posts_ref = db.collection('food_posts')
         docs = posts_ref.stream()
         posts = []
@@ -297,7 +401,7 @@ def food_posts():
         if request.method == 'POST':
             post_id = request.form['post_id']
             return redirect(url_for('claim',post_id=post_id))
-        return render_template('food_posts.html',posts=posts)
+        return render_template('food_posts.html',posts=posts,donor=donor_data)
 
 @app.route('/claim', methods=['GET','POST'])
 def claim():
