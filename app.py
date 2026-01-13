@@ -46,7 +46,7 @@ def donor_register():
         session['email']=email
         session['location'] = location
         session['phone'] = phone
-        session['city'] = city
+        session['city'] = city.strip()
         try:
             user = auth.create_user(
                 email=email,
@@ -60,7 +60,7 @@ def donor_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city
+            'city' : city.strip()
         })
             return redirect(url_for('donor_dashboard'))
         except Exception as e:
@@ -322,7 +322,7 @@ def ngo_register():
         city = request.form['city']
         session['ngo_location'] = location
         session['phone'] = phone
-        session['city'] = city
+        session['city'] = city.strip()
         session['darpan_id'] = darpan_id
         session['ngo_name'] = name
         session['email']=email
@@ -340,7 +340,7 @@ def ngo_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city
+            'city' : city.strip()
             })
             return redirect(url_for('food_posts'))
         except Exception as e:
