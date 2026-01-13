@@ -414,7 +414,7 @@
                 </div>
                 <div class="meta-row">
                   <span class="material-icons-round">groups</span>
-                  <span>Claimed By: <strong>{{ post['claimed_by'] }}</strong></span>
+                  <span>Claimed By: <strong>{{ post.get('requested_by').get('name') }}</strong></span>
                 </div>
               </div>
             </div>
