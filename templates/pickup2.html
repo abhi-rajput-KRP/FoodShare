@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pickup Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+  />
+    <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+  />
+
+  <style>
+    :root {
+      --primary: #2ecc71;
+      --primary-dark: #27ae60;
+      --secondary: #34495e;
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-light: #7f8c8d;
+      --accent: #e67e22;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+    }
+
+    /* Header Styling */
+    header {
+      background-color: var(--card-bg);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    header h2 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      background-color: var(--card-bg);
+      border-right: 1px solid #e0e0e0;
+    }
+
+    .sidebar .nav-link {
+      color: #5f6b7a;
+      border-radius: 12px;
+      padding: 0.5rem 0.75rem;
+      font-weight: 500;
+    }
+
+    .sidebar .nav-link.active {
+      background-color: #e6f8ed;
+      color: var(--primary-dark);
+    }
+     /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+      background: #f6f7f9;
+    }
+
+     
+    /* .track-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 1100px;
+      width: 100%;
+    } */
+
+/* Tracker container */
+.pickup-tracker {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  justify-content: center;   /* 🔥 centers buttons horizontally */
+  align-items: center;
+}
+
+/* Base button */
+.status-btn {
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  color: #555;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Hover */
+.status-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+/* Icons */
+.status-btn i {
+  font-size: 16px;
+}
+
+/* Individual colors */
+.status-btn.started {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.status-btn.nearby {
+  border-color: #f39c12;
+  color: #f39c12;
+}
+
+.status-btn.completed {
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+
+/* Active states with proper fill */
+.track-container[data-status="started"] .status-btn.started {
+  background: #3498db;
+  border-color: #3498db;
+  color: #ffffff;
+}
+
+.track-container[data-status="nearby"] .status-btn.nearby {
+  background: #f39c12;
+  border-color: #f39c12;
+  color: #ffffff;
+}
+
+.track-container[data-status="completed"] .status-btn.completed {
+  background: #2ecc71;
+  border-color: #2ecc71;
+  color: #ffffff;
+}
+
+
+
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      background: #ff8c1a;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .status-card {
+      max-width: 600px;
+      margin-top: 10px;
+    }
+
+    .map-box {
+      width: 100%;
+      height: 380px;
+      border-radius: 10px;
+      margin: 12px 0;
+      flex: 1;
+      min-height: 380px;
+    }
+
+    .driver-info {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .timeline {
+      list-style: none;
+      padding: 0;
+    }
+
+    .timeline li {
+      margin-bottom: 14px;
+      color: #aaa;
+    }
+
+    .timeline li.done {
+      color: #2ecc71;
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      overflow: hidden;
+    }
+    .post-card {
+    margin-bottom: 12px;
+}
+
+.post-card-inner {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.post-image img {
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Details container */
+.post-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5px;
+  font-size: 16px;          /* ⬆ bigger text */
+}
+
+/* Individual rows */
+.post-details .detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #34495e;
+  line-height: 1.4;
+}
+
+/* Icons */
+.post-details i {
+  font-size: 20px;          /* ⬆ bigger icons */
+}
+
+/* Highlighted colors per type */
+.detail.desc i {
+  color: #2ecc71;
+}
+
+.detail.risk i {
+  color: #e67e22;
+}
+
+.detail.qty i {
+  color: #3498db;
+}
+
+.detail.time i {
+  color: #9b59b6;
+}
+
+/* Labels */
+.post-details strong {
+  font-weight: 700;
+  margin-right: 4px;
+  color: #2c3e50;
+}
+
+
+.post-details h4 {
+    margin-bottom: 6px;
+    font-size: 16px;
+}
+
+
+.status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    background: #e7f3ff;
+    color: #007bff;
+}
+
+/* .status-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+} */
+
+.tab-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 20px;
+    background: #f1f3f5;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.tab-btn.active {
+    background: #007bff;
+    color: #fff;
+}
+
+    .status-tabs {
+  background: #f7faf8;
+  padding: 6px;
+  border-radius: 14px;
+  display: inline-flex;        
+  align-items: center;
+  gap: 6px;                      /* space between buttons */
+}
+    .count {
+        background: #eaeaea;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: 700;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        color: #5f6b7a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+        background: #eef6f1;
+    }
+
+    .tab-btn.active {
+        background: #ffffff;
+        color: #2ecc71;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .count.green {
+        background: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+    }
+
+    .count.orange {
+        background: rgba(230, 126, 34, 0.15);
+        color: #e67e22;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Sidebar on LEFT -->
+  
+  <aside class="sidebar">
+    <div class="p-3 d-flex align-items-center">
+      <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">
+        <i class="bi bi-heart-fill"></i>
+      </div>
+      <div>
+        <h6 class="mb-0 fw-bold">FoodShare</h6>
+        <small class="text-muted">Share the love</small>
+      </div>
+    </div>
+
+    <nav class="px-2">
+      <p class="text-uppercase text-muted small mb-1">Main menu</p>
+      <ul class="nav nav-pills flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link" href="/food_posts">
+            <i class="bi bi-speedometer2 me-2"></i>Food Posts
+          </a>
+        </li>
+       
+        <li class="nav-item">
+          <a class="nav-link active" href="/ngo_claimed_posts">
+            <i class="bi bi-basket me-2"></i>My Pickups
+          </a>
+        </li>
+      </ul>
+
+      <p class="text-uppercase text-muted small mb-1">Account</p>
+      <ul class="nav nav-pills flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link" href="/profile_ngo"><i class="bi bi-person me-2"></i>Profile</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="mt-auto p-3 border-top d-flex align-items-center">
+      <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+        {{ ngo.name[0] }}
+      </div>
+      <div>
+        <div class="fw-semibold">{{ ngo.name}}</div>
+        <small class="badge bg-success-subtle text-success">NGO</small>
+      </div>
+    </div>
+  </aside>
+  <!-- Main Content on RIGHT -->
+  <div class="main-content">
+    <!-- Header -->
+    <header>
+      <h2>
+        <span class="material-icons-round">volunteer_activism</span>
+        FoodShare
+      </h2>
+      <a href="/logout">
+        <button style="background-color: #27ae60;" class="btn btn-primary rounded-pill shadow-sm">
+          Logout
+        </button>
+      </a>
+    </header>
+
+<div class="status-tabs mb-4">
+  <button class="tab-btn active" onclick="showTab('pending', event)">
+    Pending
+    <span class="count orange">{{ pending_count }}</span>
+  </button>
+
+  <button class="tab-btn" onclick="showTab('completed', event)">
+    Completed
+    <span class="count green">{{ completed_count }}</span>
+  </button>
+</div>
+
+  {% if posts %}
+    {% for post in posts %}
+      {% if post.donor_lat is not none and post.donor_lng is not none and post.ngo_lat is not none and post.ngo_lng is not none %}
+          
+
+            <main class="main">
+
+    <div class="track-container" data-status="{{ post.pickup_status }}">
+
+  <!-- MAP CARD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="post-card">
+
+
+  
+    <div class="post-card-inner">
+      <div class="post-image">
+        <img src="{{ post.image_url }}" alt="Food Image">
+      </div>
+
+      <!-- Details -->
+      <div class="post-details">
+    <p class="detail desc">
+      <i class="bi bi-basket2-fill"></i>
+      <strong>Description:</strong> {{ post.description }}
+    </p>
+
+    <p class="detail risk">
+      <i class="bi bi-speedometer2"></i>
+      <strong>Risk of Spoilage:</strong> {{ post.prediction }}
+    </p>
+
+    <p class="detail qty">
+      <i class="bi bi-box-seam"></i>
+      <strong>Quantity:</strong> {{ post.quantity }} serves
+    </p>
+
+    <p class="detail time">
+      <i class="bi bi-clock-fill"></i>
+      <strong>Prepared at:</strong> {{ post.prepared_at }}
+    </p>
+  </div>
+    </div>
+    </div>
+
+  </div>
+  {% if post.pickup_status != 'completed' %}
+    <div id="map-{{ post.post_id }}" class="map-box"></div>
+    <p id="distance-{{ post.post_id }}" class="mt-2"></p>
+  
+    <p class="detail desc">
+      <i class="bi bi-envelope-at-fill"></i>
+      <strong>Email:</strong> {{ post.email }}
+    </p>
+    <p class="detail desc">
+      <i class="bi bi-pin-map-fill"></i>
+      <strong>Location:</strong> {{ post.location }}
+    </p>
+    <p class="detail desc">
+      <i class="bi bi-person-fill-add"></i>
+      <strong>Contact no.:</strong> {{ post.phone }}
+    </p>
+
+    <!-- <div class="driver-info">
+      <p class="mt-2">
+          <strong>Pickup status:</strong>
+          <span id="status-{{ post.post_id }}">
+            {{ post.pickup_status|default('not_started') }}
+          </span>
+        </p>
+  
+    </div> -->
+  {% endif %}
+  </div>
+ <div class="btn-group btn-group-sm pickup-tracker">
+    <button class="status-btn started"
+            onclick="setStatus('{{ post.post_id }}', 'started',this)">
+      <i class="bi bi-play-circle-fill"></i>
+      Pickup Started
+    </button>
+
+    <button class="status-btn nearby"
+            onclick="setStatus('{{ post.post_id }}', 'nearby',this)">
+      <i class="bi bi-geo-alt-fill"></i>
+      Nearby
+    </button>
+
+    <button class="status-btn completed"
+            onclick="setStatus('{{ post.post_id }}', 'completed',this)">
+      <i class="bi bi-check-circle-fill"></i>
+      Completed
+    </button>
+  </div>
+  </div>
+  </main>
+  
+
+
+      {% else %}
+        <p class="text-muted">Location not available for this donation.</p>
+      {% endif %}
+        {% if post.pickup_status != 'completed' %}
+        <!-- <div class="track-container" data-status="{{ post.pickup_status }}">
+
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary"
+                  onclick="setStatus('{{ post.post_id }}', 'started')">
+            Pickup started
+          </button>
+          <button class="btn btn-outline-secondary"
+                  onclick="setStatus('{{ post.post_id }}', 'nearby')">
+            Nearby
+          </button>
+          <button class="btn btn-outline-secondary"
+                  onclick="setStatus('{{ post.post_id }}', 'completed')">
+            Completed
+          </button>
+        </div>
+        </div> -->
+
+       
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">
+      No claimed donations with location yet.
+    </div>
+  {% endif %}
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("JS is running ✅");
+
+  {% for post in posts %}
+    {% if post.pickup_status != 'completed' and post.donor_lat is not none
+       and post.donor_lng is not none
+       and post.ngo_lat is not none
+       and post.ngo_lng is not none %}
+
+    const donor{{ loop.index }} = {{ [post.donor_lat, post.donor_lng] | tojson }};
+    const ngo{{ loop.index }} = {{ [post.ngo_lat, post.ngo_lng] | tojson }};
+
+    const map{{ loop.index }} = L.map("map-{{ post.post_id }}");
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map{{ loop.index }});
+
+    L.marker(donor{{ loop.index }}).addTo(map{{ loop.index }}).bindPopup("Donor");
+    L.marker(ngo{{ loop.index }}).addTo(map{{ loop.index }}).bindPopup("NGO");
+
+    L.Routing.control({
+      waypoints: [
+        L.latLng(ngo{{ loop.index }}[0], ngo{{ loop.index }}[1]),
+        L.latLng(donor{{ loop.index }}[0], donor{{ loop.index }}[1])
+      ],
+      lineOptions: {
+        styles: [
+          { color: "#f02719", weight: 5 }
+        ]
+      },
+      addWaypoints: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: true,
+      show: false,
+      createMarker: () => null
+    }).addTo(map{{ loop.index }});
+
+    {% endif %}
+  {% endfor %}
+
+});
+</script>
+
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+<script>
+function showTab(tab, event) {
+  const allPosts = document.querySelectorAll('.track-container');
+  const buttons = document.querySelectorAll('.tab-btn');
+
+  buttons.forEach(btn => btn.classList.remove('active'));
+  if (event) event.target.classList.add('active');
+
+  allPosts.forEach(post => {
+    const status = post.dataset.status;
+
+    if (tab === 'pending') {
+      post.style.display =
+        ['not_started', 'started', 'nearby'].includes(status)
+          ? 'block'
+          : 'none';
+    }
+
+    if (tab === 'completed') {
+      post.style.display = (status === 'completed') ? 'block' : 'none';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  showTab('pending');
+});
+</script>
+
+
+
+  <script>
+function setStatus(postId, status, btn) {
+  fetch(`/update_pickup_status/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `status=${encodeURIComponent(status)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      alert('Failed to update status');
+      return;
+    }
+
+    // ✅ now btn is defined
+    const container = btn.closest('.track-container');
+    if (!container) return;
+
+    // 🔥 update state (CSS reacts instantly)
+    container.dataset.status = status;
+
+    // 🔁 tab filtering
+    const activeTab =
+      document.querySelector('.tab-btn.active')?.innerText.toLowerCase();
+
+    if (status === 'completed' && activeTab === 'pending') {
+      container.style.display = 'none';
+    }
+
+    if (status !== 'completed' && activeTab === 'completed') {
+      container.style.display = 'none';
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Error updating status');
+  });
+}
+</script>
+
+
+
+
+
+<script>
+  const menuIcon = document.getElementById('menu-icon');
+  const sidebar = document.querySelector('.sidebar');
+  
+</script>
+</body>
+</html>
