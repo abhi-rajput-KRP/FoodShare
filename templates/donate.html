@@ -44,6 +44,15 @@
         margin-bottom: 10px;
         display: block;
       }
+      .btn-primary {
+    color: #fff;
+    background-color: #09e109;
+    border-color: #7dd97f;
+}
+.text-primary {
+    --bs-text-opacity: 1;
+    color: rgb(11 183 66) !important;
+}
     </style>
   </head>
 
@@ -237,6 +246,9 @@
                       <label for="quantity"
                         ><i class="bi bi-box-seam me-1"></i>How many people can it serve ?</label
                       >
+                      <input type="hidden" id="donor_lat" name="donor_lat">
+                      <input type="hidden" id="donor_lng" name="donor_lng">
+
                     </div>
                   </div>
                 </div>
@@ -364,6 +376,10 @@
                 "photo",
                 document.getElementById("photo").files[0]
               );
+            // inside your existing submit handler, before fetch("/post", ...)
+            formData.append("donor_lat", document.getElementById("donor_lat").value || "");
+            formData.append("donor_lng", document.getElementById("donor_lng").value || "");
+
             const postRes = await fetch("/post", {
               method: "POST",
               body: formData,
@@ -381,5 +397,29 @@
           }
         });
     </script>
+    <script>
+window.addEventListener('load', () => {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const latInput = document.getElementById('donor_lat');
+      const lngInput = document.getElementById('donor_lng');
+      if (!latInput || !lngInput) {
+        console.warn('Hidden inputs for donor_lat/donor_lng not found');
+        return;
+      }
+      console.log('✅ Donor GPS:', pos.coords.latitude, pos.coords.longitude);
+      latInput.value = pos.coords.latitude;
+      lngInput.value = pos.coords.longitude;
+    },
+    err => {
+      console.warn('⚠️ Donor GPS failed:', err.code, err.message);
+      // OK: user denied, form will submit without coords
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+});
+</script>
+
+
   </body>
 </html>
