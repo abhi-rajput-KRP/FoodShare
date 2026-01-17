@@ -46,10 +46,10 @@
       }
 
       body {
-        font-family: "Inter", sans-serif;
+        font-family:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background-color: var(--bg-color);
         color: var(--text-main);
-        display: flex;  /* ← KEY FIX */
+        display: flex; 
       }
 
       /* Header Styling */
@@ -94,7 +94,15 @@
         background-color: #e6f8ed;
         color: var(--primary-dark);
       }
+      .btn-success {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
 
+    .btn-success:hover {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
       /* Main Content */
       .main-content {
         flex: 1;
@@ -105,17 +113,16 @@
 
       /* Grid Layout for Cards */
       .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px 40px;
-        width: 100%;
-      }
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
 
-      .food-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 25px;
-      }
+      =
 
       /* Card Styling */
       .food-card {
@@ -207,11 +214,14 @@
       }
       /* Donation filter bar */
     .donation-filters {
-        background: #f7faf8;
-        padding: 6px;
-        border-radius: 14px;
-        width: fit-content;
-    }
+  background: #f7faf8;
+  padding: 6px;
+  border-radius: 14px;
+  display: inline-flex;        
+  align-items: center;
+  gap: 6px;                      /* space between buttons */
+}
+
 
     .filter-btn {
         background: transparent;
@@ -314,7 +324,95 @@
       .material-icons-round{
         margin-left: 30px;
       }
+  
     }
+.donation-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 26px;
+}
+.pickup-card {
+    background: #ffffff;
+    padding: 24px 26px;
+    width: 360px;
+    min-height: 400px;
+    font-family: sans-serif;
+}
+
+.pickup-title {
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pickup-step {
+    display: flex;
+    gap: 18px;
+    position: relative;
+    padding-bottom: 30px;
+}
+
+/* Only draw the line if it is NOT the last step */
+.pickup-step:not(:last-of-type)::before {
+    display: block;
+}
+
+.pickup-step:last-of-type::before {
+    display: none;
+}
+
+.pickup-step::before {
+    content: "";
+    position: absolute;
+    left: 19px;
+    top:42px;
+    height: calc(100% - 8px);
+    width: 3px;
+    background: #e0e0e0;
+}
+
+.pickup-step.completed::before {
+    background: #2ecc71;
+}
+
+.circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e9f7ef;
+    color: #2ecc71;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.food-card.completed {
+    width: 320px;
+    max-width: 320px;
+}
+
+.pickup-step.pending .circle {
+    background: #eef3ef;
+    color: #6c757d;
+}
+
+.text strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.text small {
+    color: #777;
+    font-size: 13px;
+}
 
     </style>
   </head>
@@ -391,19 +489,47 @@
           </button>
         </a>
       </header>
+      <div style="margin-bottom: 20px;padding: 0 20px 40px;">
+          <h1 style="font-size: 1.8rem; color: var(--secondary)">
+            My Donations
+          </h1>
+          <p style="color: var(--text-light)">
+            Manage and track all your food donations here.
+          </p>
+        </div>
+      {% if posts %}
+<div class="donation-filters mb-4">
+  <button class="filter-btn active" onclick="filterDonations('pending', this)">
+    Pending
+    <span class="count orange">{{ pending_count }}</span>
+  </button>
+
+  <button class="filter-btn" onclick="filterDonations('completed', this)">
+    Completed
+    <span class="count green">{{ completed_count }}</span>
+  </button>
+</div>
+{% endif %}
+
 
       <!-- Food Posts -->
       <div class="container">
         
 <!-- DONATION FILTER BAR -->
         {% if posts %}
-        <div class="food-grid">
           {% for post in posts %}
-          <div class="food-card">
+          <div class="food-card {% if post['pickup_status'] == 'completed' %}completed{% endif %}"
+     data-status="{{ post['pickup_status'] }}">
+
+            <div class="donation-row">
+              <div class="donation-details">
             <div class="card-header">
               <h3 class="food-title"><img src="{{ post['image_url'] }}" alt="post" width="90%"></h3>
             </div>
 
+            {% set ps = post.pickup_status if post.pickup_status is defined else {} %}
+          
+    
             <div class="card-body">
               <p class="description">{{ post['description'] }}</p>
 
@@ -418,9 +544,57 @@
                 </div>
               </div>
             </div>
+            </div>
+            {% if ps!='completed' %}
+<div class="donation-status">
+<div class="pickup-card">
+    <div class="pickup-title">
+        🟢 Pickup Status
+    </div>
+
+    <!-- NGO Claimed (GREEN even if pickup_status missing) -->
+    <div class="pickup-step completed">
+        <div class="circle">✔</div>
+        <div class="text">
+            <strong>NGO Claimed</strong>
+            <small>{{ post.get('requested_at').time }}</small>
+        </div>
+    </div>
+
+    <!-- Pickup Confirmed -->
+    <div class="pickup-step {{ 'completed' if ps=='completed' else 'pending' }}">
+        <div class="circle">
+            {{ '✔' if ps=='started' else '✔' if ps=='nearby' else '✔' if ps=='completed' else '2' }}
+        </div>
+        <div class="text">
+            <strong>Pickup Started</strong>
+        </div>
+    </div>
+
+    <!-- Driver En Route -->
+    <div class="pickup-step {{ 'completed' if ps=='completed' else 'pending' }}">
+        <div class="circle">
+            {{ '✔' if ps=='nearby' else '✔' if ps=='completed' else '3' }}
+        </div>
+        <div class="text">
+            <strong>Nearby </strong>
+        </div>
+    </div>
+
+    <!-- Arrived -->
+    <div class="pickup-step {{ 'completed' if ps=='completed' is defined else 'pending' }}">
+        <div class="circle">{{ '✔' if ps=='completed' else '4' }}</div>
+        <div class="text">
+            <strong>Food Picked Up</strong>
+        </div>
+    </div>
+</div>
+</div>
+{% endif %}
+</div>
           </div>
           {% endfor %}
-        </div>
+        
         {% else %}
         <div class="empty-state">
           <span class="material-icons-round empty-icon">soup_kitchen</span>
@@ -432,6 +606,37 @@
         {% endif %}
       </div>
     </div>
+
+<script>
+function filterDonations(type, btn) {
+  const cards = document.querySelectorAll('.food-card');
+  const buttons = document.querySelectorAll('.filter-btn');
+
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  cards.forEach(card => {
+    const status = card.dataset.status;
+
+    if (type === 'pending') {
+      if (['not_started', 'started', 'nearby'].includes(status)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    }
+
+    if (type === 'completed') {
+      card.style.display = (status === 'completed') ? 'flex' : 'none';
+    }
+  });
+}
+
+// default view
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('.filter-btn').click();
+});
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
