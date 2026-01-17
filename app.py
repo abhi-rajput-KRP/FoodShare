@@ -143,19 +143,38 @@ def donor_dashboard():
     }
     req_ref = db.collection('food_posts').where('email','==',email)
     docs = req_ref.stream()
-    req_ref = db.collection('food_posts')
-    docs = req_ref.stream()
-    reqs = []
+
+    unclaimed_posts = []
+    claim_requests = []
+
     for doc in docs:
-        if doc.to_dict().get('requested_by') is not None and doc.to_dict().get('claimed')==False:
-            reqs.append(doc)
+        post = doc.to_dict()
+
+        # 🚫 If donor already accepted → hide everywhere
+        if post.get('donor_accepted') is True:
+            continue
+        # NO NGO has requested yet
+        if not post.get('requested_by'):
+            unclaimed_posts.append(post)
+
+        # NGO has requested
+        else:
+            claim_requests.append(post)
+
+    # req_ref = db.collection('food_posts')
+    # docs = req_ref.stream()
+    # reqs = []
+    # for doc in docs:
+    #     if doc.to_dict().get('requested_by') is not None and doc.to_dict().get('claimed')==False:
+    #         reqs.append(doc)
     if request.method == 'POST':
         req_id = request.form.get('req_id')
         db.collection('food_posts').document(req_id).update({
+            'donor_accepted': True,
             'claimed': True
         })
         return redirect(url_for('donor_dashboard'))
-    return render_template('donor_dashboard.html',donor=donor_data,stats=stats,reqs=reqs)
+    return render_template('donor_dashboard.html',donor=donor_data,stats=stats,reqs=claim_requests,unclaimed_posts=unclaimed_posts)
 
 
 @app.route('/profile_donor')
@@ -212,7 +231,15 @@ def my_donations():
         for doc in docs:
             post = doc.to_dict()
             donations.append(post)
-        return render_template('my_donation.html',posts=donations,donor=donor_data)
+        pending_count = 0
+        completed_count = 0
+        print(donations)
+        for post in donations:
+            if post.get('pickup_status') == 'completed':
+                completed_count += 1
+            else:
+                pending_count += 1
+        return render_template('my_donation.html',posts=donations,donor=donor_data,pending_count=pending_count,completed_count=completed_count)
 
 @app.route('/donate', methods=['GET'])
 def donate():
@@ -250,6 +277,13 @@ def post_food():
             image_url = blob.public_url
         else :
             image_url = None
+
+        # NEW: get donor coords from form
+    donor_lat_str = data.get('donor_lat')
+    donor_lng_str = data.get('donor_lng')
+    donor_lat = float(donor_lat_str) if donor_lat_str else None
+    donor_lng = float(donor_lng_str) if donor_lng_str else None
+
     doc_ref = db.collection('food_posts').document(post_id)
     doc_ref.set({
         'post_id' : post_id, 
@@ -265,7 +299,11 @@ def post_food():
         'image_url' : image_url,
         'phone' : session['phone'],
         'city' : session['city'],
-        'email' : auth.get_user(session['uid']).email
+        'email' : auth.get_user(session['uid']).email,
+        # NEW:
+        'donor_lat': donor_lat,
+        'donor_lng': donor_lng,
+        'pickup_status': 'not_started'
     })
     
     snap = doc_ref.get()
@@ -326,6 +364,12 @@ def ngo_register():
         session['darpan_id'] = darpan_id
         session['ngo_name'] = name
         session['email']=email
+        ngo_lat = request.form.get('ngo_lat')
+        ngo_lng = request.form.get('ngo_lng')
+
+        ngo_lat = float(ngo_lat) if ngo_lat else None
+        ngo_lng = float(ngo_lng) if ngo_lng else None
+
         try:
             user = auth.create_user(
                 email=email,
@@ -340,7 +384,9 @@ def ngo_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city.strip()
+            'city' : city.strip(),
+            'ngo_lat': ngo_lat,
+            'ngo_lng': ngo_lng
             })
             return redirect(url_for('food_posts'))
         except Exception as e:
@@ -383,6 +429,8 @@ def ngo_login():
                 session['darpan_id'] = ngo['darpan_id']
                 session['ngo_name'] = ngo['name']
                 session['email']=email
+                session['ngo_lat'] = ngo.get('ngo_lat')
+                session['ngo_lng'] = ngo.get('ngo_lng')
                 return redirect(url_for('food_posts'))
             else:
                 return redirect(url_for('ngo_invalid_login'))
@@ -416,6 +464,45 @@ def food_posts():
             post_id = request.form['post_id']
             return redirect(url_for('claim',post_id=post_id))
         return render_template('food_posts.html',posts=posts,ngo=ngo_data)
+    
+@app.route('/ngo_claimed_posts')
+def ngo_claimed_posts():
+    if session.get('uid') is None or session.get('darpan_id') is None:
+        return redirect(url_for('ngo_login'))
+
+    email = session['email']
+    ngo_query = db.collection('NGOs').where('email', '==', email).limit(1)
+    ngo_docs = list(ngo_query.stream())
+    if not ngo_docs:
+        return "NGO not found", 404
+    ngo_data = ngo_docs[0].to_dict()
+
+    ngo_lat = ngo_data.get('ngo_lat')
+    ngo_lng = ngo_data.get('ngo_lng')
+
+    posts_ref = db.collection('food_posts').where('claimed', '==', True)
+    posts = []
+    for doc in posts_ref.stream():
+        post = doc.to_dict()
+        if (post.get('city', '').lower() == ngo_data.get('city', '').lower()
+                and post.get('donor_lat') is not None
+                and post.get('donor_lng') is not None):
+            post['ngo_lat'] = ngo_lat
+            post['ngo_lng'] = ngo_lng
+            posts.append(post)
+    pending_count = 0
+    completed_count = 0
+    for post in posts:
+        if post.get('pickup_status') == 'completed':
+            completed_count += 1
+        else:
+            pending_count += 1
+    print("POSTS SENT TO TEMPLATE:", posts)
+
+
+    return render_template('pickup2.html', posts=posts, ngo=ngo_data, pending_count=pending_count, completed_count=completed_count)
+
+
 
 @app.route('/profile_ngo')
 def profile_ngo():
@@ -447,7 +534,27 @@ def claim():
             })
             post = doc.to_dict()
             return render_template('claim.html',post=post)
-    
+
+
+@app.route('/update_pickup_status/<post_id>', methods=['POST'])
+def update_pickup_status(post_id):
+    if session.get('darpan_id') is None:
+        return jsonify({'error': 'Not NGO'}), 403
+
+    new_status = request.form.get('status')
+    if new_status not in ['not_started', 'started', 'nearby', 'completed']:
+        return jsonify({'error': 'Invalid status'}), 400
+
+    db.collection('food_posts').document(post_id).update({
+        'pickup_status': new_status
+    })
+    return jsonify({'success': True})
+
+
+@app.route('/pickup/<post_id>')
+def pickup_page(post_id):
+    return render_template('pickup2.html')
+
 
 @app.route('/ngo_invalid_login')
 def ngo_invalid_login():
