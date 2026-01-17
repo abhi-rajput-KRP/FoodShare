@@ -135,6 +135,59 @@
       left: 1rem;
       cursor: pointer;
     }
+
+  .filter-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #5f6b7a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: #eef6f1;
+}
+
+.filter-btn.active {
+  background: #ffffff;
+  color: #2ecc71;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Count badges */
+.count {
+  background: #eaeaea;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.count.green {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.count.orange {
+  background: rgba(230, 126, 34, 0.15);
+  color: #e67e22;
+}
+
+.donation-filters {
+  display: flex;
+  gap: 12px;
+  background: #f4f6f8;
+  padding: 8px;
+  border-radius: 16px;
+  width: fit-content;
+}
+
     .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -316,6 +369,15 @@
         margin-left: 30px;
       }
     }
+.donation-tab {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
   </style>
 </head>
 
@@ -447,38 +509,116 @@
         </div>
       </div>
       <div class="container">
-        
-<!-- DONATION FILTER BAR -->
-        {% if reqs %}
-        <div class="food-grid">
-          {% for req in reqs %}
-          <div class="food-card">
-            <div class="card-header">
-              <h3 class="food-title"><img src="{{ req.get('image_url') }}" alt="post" width="90%"></h3>
-            </div>
+        <!-- TABS -->
+<div class="donation-filters mb-4" id="donorTabs">
 
-            <div class="card-body">
-              <p class="description">{{ req.get('description') }}</p>
-              <div class="meta-info">
-                <div class="meta-row">
-                  <span class="material-icons-round">groups</span>
-                  <span>Claim request by : <strong>{{ req.get('requested_by')['name'] }}</strong></span>
-                  <span>Contact Number : <strong>{{ req.get('requested_by')['phone'] }}</strong></span>
-                </div>
-                
-              </div>
-            </div>
+  <button class="filter-btn active"
+          onclick="showTab('unclaimed', this)">
+    Unclaimed
+    <span class="count orange">{{ unclaimed_posts|length }}</span>
+  </button>
 
-            <div class="card-footer">
-              <form method="post">
-                <input type="hidden" name="req_id" value="{{ req.get('post_id') }}">
-                <button type="submit" class="claim-btn">Accept</button>
-              </form>
+  <button class="filter-btn"
+          onclick="showTab('claims', this)">
+    Claim Requests
+    {% if reqs %}
+      <span class="count green">{{ reqs|length }}</span>
+    {% else %}
+      <span class="count">0</span>
+    {% endif %}
+  </button>
+
+</div>
+
+
+
+<div class="tab-content">
+
+<!-- UNCLAIMED POSTS -->
+<div class="donation-tab" id="unclaimed">
+  {% if unclaimed_posts %}
+    <div class="food-grid">
+      {% for post in unclaimed_posts %}
+      <div class="food-card">
+        <div class="card-header">
+          <img src="{{ post.image_url }}" width="100%" class="rounded">
+        </div>
+
+        <div class="card-body">
+          <p class="description">{{ post.description }}</p>
+          <div class="meta-info">
+            <div class="meta-row">
+              <span class="material-icons-round">schedule</span>
+              <span>Status: <strong>Waiting for NGO</strong></span>
             </div>
           </div>
-          {% endfor %}
         </div>
-        {% endif %}
+
+        <div class="card-footer text-center">
+          <span class="badge bg-warning text-dark">Unclaimed</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🍽️</div>
+      <h5>No unclaimed posts</h5>
+      <p class="text-muted">Your donations will appear here</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- CLAIM REQUESTS -->
+<div class="donation-tab" id="claims" style="display:none;">
+  {% if reqs %}
+    <div class="food-grid">
+      {% for req in reqs %}
+      <div class="food-card">
+        <div class="card-header">
+          <img src="{{ req.image_url }}" width="100%" class="rounded">
+        </div>
+
+        <div class="card-body">
+          <p class="description">{{ req.description }}</p>
+
+          <div class="meta-info">
+            <div class="meta-row">
+              <span class="material-icons-round">groups</span>
+              <span>
+                Requested by:
+                <strong>{{ req.requested_by.name }}</strong>
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="material-icons-round">call</span>
+              <strong>{{ req.requested_by.phone }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <form method="post">
+            <input type="hidden" name="req_id" value="{{ req.post_id }}">
+            <button type="submit" class="claim-btn">
+              Accept Request
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h5>No claim requests yet</h5>
+      <p class="text-muted">NGO requests will appear here</p>
+    </div>
+  {% endif %}
+</div>
+
+</div>
+
       </div>
 
     </div>
@@ -498,5 +638,25 @@
     }
   });
 </script>
+<script>
+function showTab(tabId, btn) {
+
+  // hide all tabs
+  document.querySelectorAll('.donation-tab').forEach(tab => {
+    tab.style.display = 'none';
+  });
+
+  // show selected tab
+  document.getElementById(tabId).style.display = 'block';
+
+  // active button style
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+}
+</script>
+
+
 </html>
 
