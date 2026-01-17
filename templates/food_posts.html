@@ -46,7 +46,7 @@
       }
 
       body {
-        font-family: "Inter", sans-serif;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background-color: var(--bg-color);
         color: var(--text-main);
         display: flex;  /* ← KEY FIX */
@@ -322,8 +322,13 @@
             <a class="nav-link active" href="/food_posts"><i class="bi bi-basket me-2"></i>Food Posts</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/profile_ngo"><i class="bi bi-person me-2"></i>Profile</a>
+            <a  class="nav-link " href="/ngo_claimed_posts"><i class="bi bi-speedometer2 me-2"></i>My pickups</a>
           </li>
+          <p class="text-uppercase text-muted small mb-1">Account</p>
+      <ul class="nav nav-pills flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link" href="/profile_ngo"><i class="bi bi-person me-2"></i>Profile</a>
+        </li>
         </ul>
       </nav>
 
