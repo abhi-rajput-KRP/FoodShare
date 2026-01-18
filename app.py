@@ -1,9 +1,8 @@
 from datetime import datetime,timezone
-from google.cloud import firestore as gcf_firestore 
 from flask import Flask, render_template, request, url_for, redirect, jsonify,session
 from xgboost import XGBClassifier
 import firebase_admin
-from firebase_admin import credentials, firestore , storage , auth ,messaging
+from firebase_admin import credentials, firestore , storage , auth
 import json
 import uuid
 import requests
@@ -42,18 +41,37 @@ def donor_register():
         password = request.form['password']
         phone = request.form['phone']
         name = request.form['donor_name']
-        location = request.form['donor_location']
-        city = request.form['city']
         contact_name = request.form['contact_name']
         session['email']=email
-        session['location'] = location
         session['phone'] = phone
-        session['city'] = city.strip()
         donor_lat = request.form.get('donor_lat')
         donor_lng = request.form.get('donor_lng')
-
         donor_lat = float(donor_lat) if donor_lat else None
         donor_lng = float(donor_lng) if donor_lng else None
+        session['lat'] = donor_lat
+        session['lng'] = donor_lng
+
+        url = "https://nominatim.openstreetmap.org/reverse"
+
+        params = {
+            "lat": donor_lat,
+            "lon": donor_lng,
+            "format": "json"
+        }
+
+        headers = {
+            "User-Agent": "FoodShare/1.0"
+        }
+
+        # Fetch JSON from API
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()  # raises error if request failed
+
+        data = response.json()  # Parse JSON into Python dict
+
+        # Extract address
+        location = data.get("display_name")
+        session['location'] = location
         try:
             user = auth.create_user(
                 email=email,
@@ -67,7 +85,6 @@ def donor_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city.strip(),
             'donor_lat': donor_lat,
             'donor_lng': donor_lng
         })
@@ -108,8 +125,9 @@ def donor_login():
                 donor = docs[0].to_dict()
                 session['location'] = donor['location']
                 session['phone'] = donor['phone']
-                session['city'] = donor['city']
                 session['email']=email
+                session['lat'] = donor['donor_lat']
+                session['lng'] = donor['donor_lng']
                 return redirect(url_for('donor_dashboard'))
             else:
                 return redirect(url_for('donor_invalid_login'))
@@ -180,9 +198,8 @@ def donor_dashboard():
         donor_data = donor_docs[0].to_dict()
     else:
         donor_data = {}
-    print(donor_data)
     posts=[]
-    posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
+    posts_ref = db.collection('food_posts').where('email', '==', email).where('claim_accepted','==',True)
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
@@ -207,7 +224,7 @@ def donor_dashboard():
     for doc in docs:
         post = doc.to_dict()
 
-        # 🚫 If donor already accepted → hide everywhere
+        #  If donor already accepted → hide everywhere
         if post.get('donor_accepted') is True:
             continue
         # NO NGO has requested yet
@@ -217,19 +234,17 @@ def donor_dashboard():
         # NGO has requested
         else:
             claim_requests.append(post)
-    email_abhi="xyzabhirajput@gmail.com"
-    donor_abhi=[]
-    posts_ref = db.collection('food_posts').where('email', '==', email_abhi)
+    email= session.get('email')
+    donor=[]
+    posts_ref = db.collection('food_posts').where('email', '==', email)
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
-        donor_abhi.append(data)
-    print(donor_abhi)
+        donor.append(data)
     if request.method == 'POST':
         req_id = request.form.get('req_id')
         db.collection('food_posts').document(req_id).update({
-            'donor_accepted': True,
-            'claimed': True
+            'claim_accepted': True
         })
     
 
@@ -256,7 +271,7 @@ def profile_donor():
         donor_data = {}
     
     posts=[]
-    posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
+    posts_ref = db.collection('food_posts').where('email', '==', email).where('claim_accepted','==',True)
     docs = posts_ref.stream()
     for doc in docs:
         data = doc.to_dict()
@@ -286,7 +301,7 @@ def my_donations():
         if donor_docs:
             donor_data = donor_docs[0].to_dict()
 
-        posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
+        posts_ref = db.collection('food_posts').where('email', '==', email).where('claim_accepted','==',True)
         docs = posts_ref.stream()
         donations = []
         for doc in docs:
@@ -294,7 +309,6 @@ def my_donations():
             donations.append(post)
         pending_count = 0
         completed_count = 0
-        print(donations)
         for post in donations:
             if post.get('pickup_status') == 'completed':
                 completed_count += 1
@@ -339,12 +353,6 @@ def post_food():
         else :
             image_url = None
 
-        # NEW: get donor coords from form
-    donor_lat_str = data.get('donor_lat')
-    donor_lng_str = data.get('donor_lng')
-    donor_lat = float(donor_lat_str) if donor_lat_str else None
-    donor_lng = float(donor_lng_str) if donor_lng_str else None
-
     doc_ref = db.collection('food_posts').document(post_id)
     doc_ref.set({
         'post_id' : post_id, 
@@ -354,16 +362,15 @@ def post_food():
         'temperature': temp,
         'is_refrigerated': is_refrigerated,
         'food_types': food_types,
-        'claimed': False,
+        'claim_accepted': False,
         'prepared_at': prepared_at,
         'timestamp': firestore.SERVER_TIMESTAMP,
         'image_url' : image_url,
         'phone' : session['phone'],
-        'city' : session['city'],
         'email' : auth.get_user(session['uid']).email,
         # NEW:
-        'donor_lat': donor_lat,
-        'donor_lng': donor_lng,
+        'donor_lat': session.get('lat'),
+        'donor_lng': session.get('lng'),
         'pickup_status': 'not_started'
     })
     
@@ -399,9 +406,8 @@ def post_food():
 @app.route('/temp', methods=['GET'])
 def get_temp():
     op_wheather_api_key = dotenv.get_key(".env", "OP_WEATHER_API_KEY")
-    cords = requests.get(f"http://api.openweathermap.org/geo/1.0/direct?q=amroha&limit=5&appid={op_wheather_api_key}")
-    lat = cords.json()[0]['lat']
-    lon = cords.json()[0]['lon']
+    lat = session.get('lat')
+    lon = session.get('lng')
     conditions = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={op_wheather_api_key}")
     temp = conditions.json()['main']['temp']-273.15
     return jsonify({'temp': temp})
@@ -416,12 +422,8 @@ def ngo_register():
         password = request.form['password']
         phone = request.form['phone']
         name = request.form['ngo_name']
-        location = request.form['ngo_location']
         contact_name = request.form['contact_name']
-        city = request.form['city']
-        session['ngo_location'] = location
         session['phone'] = phone
-        session['city'] = city.strip()
         session['darpan_id'] = darpan_id
         session['ngo_name'] = name
         session['email']=email
@@ -430,7 +432,27 @@ def ngo_register():
 
         ngo_lat = float(ngo_lat) if ngo_lat else None
         ngo_lng = float(ngo_lng) if ngo_lng else None
+        url = "https://nominatim.openstreetmap.org/reverse"
 
+        params = {
+            "lat": ngo_lat,
+            "lon": ngo_lng,
+            "format": "json"
+        }
+
+        headers = {
+            "User-Agent": "FoodShare/1.0"
+        }
+
+        # Fetch JSON from API
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()  # raises error if request failed
+
+        data = response.json()  # Parse JSON into Python dict
+
+        # Extract address
+        location = data.get("display_name")
+        session['location'] = location
         try:
             user = auth.create_user(
                 email=email,
@@ -445,7 +467,6 @@ def ngo_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city.strip(),
             'ngo_lat': ngo_lat,
             'ngo_lng': ngo_lng
             })
@@ -484,9 +505,8 @@ def ngo_login():
                 ngo_ref = db.collection('NGOs').where('email','==',email).limit(1)
                 docs = list(ngo_ref.stream())
                 ngo = docs[0].to_dict()
-                session['ngo_location'] = ngo['location']
+                session['location'] = ngo['location']
                 session['phone'] = ngo['phone']
-                session['city'] = ngo['city']
                 session['darpan_id'] = ngo['darpan_id']
                 session['ngo_name'] = ngo['name']
                 session['email']=email
@@ -526,7 +546,7 @@ def food_posts():
         max_lng = ngo_lng + lng_range
 
         donor_query = (db.collection("Donors").where("donor_lat", ">=", min_lat).where("donor_lat", "<=", max_lat))
-
+        # .where("donor_lng", ">=", min_lng).where("donor_lng", "<=", max_lng))
         donor_docs = donor_query.stream()
         nearby_donors_data = []
 
@@ -552,7 +572,8 @@ def food_posts():
             post = doc.to_dict() 
             post['id'] = doc.id
             if post['email'] in [donor['email'] for donor in nearby_donors_data]:
-                posts.append(post)
+                if post.get('requested_by') is None:
+                    posts.append(post)
         if request.method == 'POST':
             post_id = request.form['post_id']
             return redirect(url_for('claim',post_id=post_id))
@@ -573,13 +594,11 @@ def ngo_claimed_posts():
     ngo_lat = ngo_data.get('ngo_lat')
     ngo_lng = ngo_data.get('ngo_lng')
 
-    posts_ref = db.collection('food_posts').where('claimed', '==', True)
+    posts_ref = db.collection('food_posts').where('claim_accepted', '==', True)
     posts = []
     for doc in posts_ref.stream():
         post = doc.to_dict()
-        if (post.get('city', '').lower() == ngo_data.get('city', '').lower()
-                and post.get('donor_lat') is not None
-                and post.get('donor_lng') is not None):
+        if (post.get('donor_lat') is not None and post.get('donor_lng') is not None):
             post['ngo_lat'] = ngo_lat
             post['ngo_lng'] = ngo_lng
             posts.append(post)
@@ -590,8 +609,6 @@ def ngo_claimed_posts():
             completed_count += 1
         else:
             pending_count += 1
-    print("POSTS SENT TO TEMPLATE:", posts)
-
 
     return render_template('pickup2.html', posts=posts, ngo=ngo_data, pending_count=pending_count, completed_count=completed_count)
 
@@ -635,11 +652,12 @@ def update_pickup_status(post_id):
         return jsonify({'error': 'Not NGO'}), 403
 
     new_status = request.form.get('status')
-    if new_status not in ['not_started', 'started', 'nearby', 'completed']:
+    if new_status not in ['not_started', 'started', 'completed']:
         return jsonify({'error': 'Invalid status'}), 400
 
     db.collection('food_posts').document(post_id).update({
-        'pickup_status': new_status
+        'pickup_status': new_status,
+        'claimed_by':session['ngo_name']
     })
     return jsonify({'success': True})
 

@@ -572,19 +572,10 @@
         </div>
     </div>
 
-    <!-- Driver En Route -->
-    <div class="pickup-step {{ 'completed' if ps=='completed' else 'pending' }}">
-        <div class="circle">
-            {{ '✔' if ps=='nearby' else '✔' if ps=='completed' else '3' }}
-        </div>
-        <div class="text">
-            <strong>Nearby </strong>
-        </div>
-    </div>
 
     <!-- Arrived -->
     <div class="pickup-step {{ 'completed' if ps=='completed' is defined else 'pending' }}">
-        <div class="circle">{{ '✔' if ps=='completed' else '4' }}</div>
+        <div class="circle">{{ '✔' if ps=='completed' else '3' }}</div>
         <div class="text">
             <strong>Food Picked Up</strong>
         </div>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="en">
   <head>
@@ -7,7 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Donor Registration</title>
-    <link rel="icon" href="https://firebasestorage.googleapis.com/v0/b/food-donation-bc43b.firebasestorage.app/o/favicon.ico?alt=media&token=56a306dc-3749-4d56-962b-dcfbb59cce10" type="image/x-icon">
+    <link
+      rel="icon"
+      href="https://firebasestorage.googleapis.com/v0/b/food-donation-bc43b.firebasestorage.app/o/favicon.ico?alt=media&token=56a306dc-3749-4d56-962b-dcfbb59cce10"
+      type="image/x-icon"
+    />
 
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
@@ -37,19 +41,16 @@
         min-height: 100vh; /* Make body at least as tall as the screen (Viewport Height) */
 
         color: #1f2937; /* Dark gray text color (easier on eyes than pure black) */
-
-      
       }
 
-     
-      
       /* This is the white box (Card) containing the form */
       .registration-container {
         background: white;
         padding: 2.5rem; /* Space inside the box */
         border-radius: 12px; /* Rounded corners */
         /* This creates the subtle 3D shadow effect */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
           0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
         width: 100%; /* Take up full width available... */
@@ -123,9 +124,6 @@
   </head>
 
   <body>
-
-
-
     <div class="registration-container">
       <h2>Donor Registration</h2>
 
@@ -147,23 +145,13 @@
             type="text"
             id="donor_location"
             name="donor_location"
-            placeholder="e.g. C-7, Chitkara University, Punjab"
+            placeholder="Will be fetched by current Location"
+            disabled
             required
           />
         </div>
-
-        <div class="form-group">
-          <label for="city">City</label>
-          <input
-            type="text"
-            id="city"
-            name="city"
-            placeholder="e.g. Amroha"
-            required
-          />
-        </div>
-        <input type="hidden" id="donor_lat" name="donor_lat">
-        <input type="hidden" id="donor_lng" name="donor_lng">
+        <input type="hidden" id="donor_lat" name="donor_lat" />
+        <input type="hidden" id="donor_lng" name="donor_lng" />
         <div class="form-group">
           <label for="contact_name">Contact Person Name</label>
           <input
@@ -213,28 +201,32 @@
       <a href="/donor_login"><button>Registered Allready ? Log in</button></a>
     </div>
 
-
     <script>
-window.addEventListener('load', () => {
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const latInput = document.getElementById('donor_lat');
-      const lngInput = document.getElementById('donor_lng');
-      if (!latInput || !lngInput) {
-        console.warn('Hidden inputs for donor_lat/donor_lng not found');
-        return;
-      }
-      console.log('✅ donor GPS:', pos.coords.latitude, pos.coords.longitude);
-      latInput.value = pos.coords.latitude;
-      lngInput.value = pos.coords.longitude;
-    },
-    err => {
-      console.warn('⚠️ donor GPS failed:', err.code, err.message);
-      // OK: user denied, form will submit without coords
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-  );
-});
-</script>
+      alert("Please make sure your GPS location is on and you are allowing us the loacation otherwise it will not work !!")
+      window.addEventListener("load", () => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const latInput = document.getElementById("donor_lat");
+            const lngInput = document.getElementById("donor_lng");
+            if (!latInput || !lngInput) {
+              console.warn("Hidden inputs for donor_lat/donor_lng not found");
+              return;
+            }
+            console.log(
+              " donor GPS:",
+              pos.coords.latitude,
+              pos.coords.longitude,
+            );
+            latInput.value = pos.coords.latitude;
+            lngInput.value = pos.coords.longitude;
+          },
+          (err) => {
+            console.warn(" donor GPS failed:", err.code, err.message);
+            // OK: user denied, form will submit without coords
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+        );
+      });
+    </script>
   </body>
 </html>

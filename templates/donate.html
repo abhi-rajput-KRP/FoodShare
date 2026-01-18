@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -45,14 +45,19 @@
         display: block;
       }
       .btn-primary {
-    color: #fff;
-    background-color: #09e109;
-    border-color: #7dd97f;
-}
-.text-primary {
-    --bs-text-opacity: 1;
-    color: rgb(11 183 66) !important;
-}
+        color: #fff;
+        background-color: #09e109;
+        border-color: #7dd97f;
+      }
+      .btn-primary:hover {
+        color: #fff;
+        background-color: #5ecd5e;
+        border-color: #7dd97f;
+      }
+      .text-primary {
+        --bs-text-opacity: 1;
+        color: rgb(11 183 66) !important;
+      }
     </style>
   </head>
 
@@ -244,11 +249,9 @@
                         required
                       />
                       <label for="quantity"
-                        ><i class="bi bi-box-seam me-1"></i>How many people can it serve ?</label
+                        ><i class="bi bi-box-seam me-1"></i>How many people can
+                        it serve ?</label
                       >
-                      <input type="hidden" id="donor_lat" name="donor_lat">
-                      <input type="hidden" id="donor_lng" name="donor_lng">
-
                     </div>
                   </div>
                 </div>
@@ -335,10 +338,10 @@
           e.preventDefault();
           // Collect form data FIRST
           const checkboxes = document.querySelectorAll(
-            'input[type="checkbox"]:checked:not(#fridgeSwitch)'
+            'input[type="checkbox"]:checked:not(#fridgeSwitch)',
           ); // Exclude switch
           const food_types = Array.from(checkboxes).map((cb) =>
-            cb.nextElementSibling.textContent.trim()
+            cb.nextElementSibling.textContent.trim(),
           );
           const preparedStr = document.getElementById("prepared_at").value; // e.g. "2026-01-10T13:30"
 
@@ -359,11 +362,11 @@
             const formData = new FormData();
             formData.append(
               "description",
-              document.getElementById("description").value
+              document.getElementById("description").value,
             );
             formData.append(
               "quantity",
-              document.getElementById("quantity").value
+              document.getElementById("quantity").value,
             );
             // formData.append("risk", risk);
             formData.append("temperature", temp);
@@ -374,11 +377,8 @@
             if (document.getElementById("photo").files[0])
               formData.append(
                 "photo",
-                document.getElementById("photo").files[0]
+                document.getElementById("photo").files[0],
               );
-            // inside your existing submit handler, before fetch("/post", ...)
-            formData.append("donor_lat", document.getElementById("donor_lat").value || "");
-            formData.append("donor_lng", document.getElementById("donor_lng").value || "");
 
             const postRes = await fetch("/post", {
               method: "POST",
@@ -397,29 +397,5 @@
           }
         });
     </script>
-    <script>
-window.addEventListener('load', () => {
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const latInput = document.getElementById('donor_lat');
-      const lngInput = document.getElementById('donor_lng');
-      if (!latInput || !lngInput) {
-        console.warn('Hidden inputs for donor_lat/donor_lng not found');
-        return;
-      }
-      console.log('✅ Donor GPS:', pos.coords.latitude, pos.coords.longitude);
-      latInput.value = pos.coords.latitude;
-      lngInput.value = pos.coords.longitude;
-    },
-    err => {
-      console.warn('⚠️ Donor GPS failed:', err.code, err.message);
-      // OK: user denied, form will submit without coords
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-  );
-});
-</script>
-
-
   </body>
 </html>
