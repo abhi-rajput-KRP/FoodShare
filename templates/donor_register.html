@@ -162,7 +162,8 @@
             required
           />
         </div>
-
+        <input type="hidden" id="donor_lat" name="donor_lat">
+        <input type="hidden" id="donor_lng" name="donor_lng">
         <div class="form-group">
           <label for="contact_name">Contact Person Name</label>
           <input
@@ -211,5 +212,29 @@
       </form>
       <a href="/donor_login"><button>Registered Allready ? Log in</button></a>
     </div>
+
+
+    <script>
+window.addEventListener('load', () => {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const latInput = document.getElementById('donor_lat');
+      const lngInput = document.getElementById('donor_lng');
+      if (!latInput || !lngInput) {
+        console.warn('Hidden inputs for donor_lat/donor_lng not found');
+        return;
+      }
+      console.log('✅ donor GPS:', pos.coords.latitude, pos.coords.longitude);
+      latInput.value = pos.coords.latitude;
+      lngInput.value = pos.coords.longitude;
+    },
+    err => {
+      console.warn('⚠️ donor GPS failed:', err.code, err.message);
+      // OK: user denied, form will submit without coords
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+});
+</script>
   </body>
 </html>
