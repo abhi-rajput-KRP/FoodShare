@@ -10,6 +10,8 @@ import requests
 from risk_calculation import risk
 import dotenv
 from datetime import timedelta
+import math
+from distance_calc import calculate_distance_km
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
@@ -47,6 +49,11 @@ def donor_register():
         session['location'] = location
         session['phone'] = phone
         session['city'] = city.strip()
+        donor_lat = request.form.get('donor_lat')
+        donor_lng = request.form.get('donor_lng')
+
+        donor_lat = float(donor_lat) if donor_lat else None
+        donor_lng = float(donor_lng) if donor_lng else None
         try:
             user = auth.create_user(
                 email=email,
@@ -60,7 +67,9 @@ def donor_register():
             'name' : name,
             'location' : location,
             'contact_name' : contact_name,
-            'city' : city.strip()
+            'city' : city.strip(),
+            'donor_lat': donor_lat,
+            'donor_lng': donor_lng
         })
             return redirect(url_for('donor_dashboard'))
         except Exception as e:
@@ -109,6 +118,53 @@ def donor_login():
             return jsonify({"error": str(e)}), 500
     return render_template('donor_login.html')
 
+@app.route('/ngos_nearby',methods=['GET','POST'])
+def ngos_nearby():
+    if not session.get('uid'):
+        return redirect(url_for('donor_login'))
+    elif session.get('darpan_id') is not None:
+        return redirect(url_for('food_posts'))
+    email = session['email']
+    donor_query = db.collection('Donors').where('email', '==', email).limit(1)
+    donor_docs = list(donor_query.stream())
+
+    if donor_docs:
+        donor_data = donor_docs[0].to_dict()
+    else:
+        donor_data = {}
+    donor_lat=donor_data.get('donor_lat')
+    donor_lng=donor_data.get('donor_lng')
+
+    lat_range = 30 / 111  # approx km per degree latitude
+    lng_range = 30 / (111 * math.cos(math.radians(donor_lat)))
+
+    min_lat = donor_lat - lat_range
+    max_lat = donor_lat + lat_range
+    min_lng = donor_lng - lng_range
+    max_lng = donor_lng + lng_range
+
+    ngo_query = (db.collection("NGOs").where("ngo_lat", ">=", min_lat).where("ngo_lat", "<=", max_lat))
+
+    ngo_docs = ngo_query.stream()
+    nearby_ngos = []
+
+    for ngo in ngo_docs:
+        ngo_data = ngo.to_dict()
+
+        if not ngo_data.get("ngo_lng"):
+            continue
+
+        distance = calculate_distance_km(
+            donor_lat, donor_lng,
+            ngo_data["ngo_lat"], ngo_data["ngo_lng"]
+        )
+
+        if distance <= 30:
+            ngo_data["distance"] = round(distance, 2)
+            nearby_ngos.append(ngo_data)
+
+    
+    return render_template('ngos_nearby.html',donor=donor_data,ngos=nearby_ngos)
 
 @app.route('/dashboard_donor',methods=['GET','POST'])
 def donor_dashboard():
@@ -124,6 +180,7 @@ def donor_dashboard():
         donor_data = donor_docs[0].to_dict()
     else:
         donor_data = {}
+    print(donor_data)
     posts=[]
     posts_ref = db.collection('food_posts').where('email', '==', email).where('claimed','==',True)
     docs = posts_ref.stream()
@@ -160,21 +217,25 @@ def donor_dashboard():
         # NGO has requested
         else:
             claim_requests.append(post)
-
-    # req_ref = db.collection('food_posts')
-    # docs = req_ref.stream()
-    # reqs = []
-    # for doc in docs:
-    #     if doc.to_dict().get('requested_by') is not None and doc.to_dict().get('claimed')==False:
-    #         reqs.append(doc)
+    email_abhi="xyzabhirajput@gmail.com"
+    donor_abhi=[]
+    posts_ref = db.collection('food_posts').where('email', '==', email_abhi)
+    docs = posts_ref.stream()
+    for doc in docs:
+        data = doc.to_dict()
+        donor_abhi.append(data)
+    print(donor_abhi)
     if request.method == 'POST':
         req_id = request.form.get('req_id')
         db.collection('food_posts').document(req_id).update({
             'donor_accepted': True,
             'claimed': True
         })
+    
+
         return redirect(url_for('donor_dashboard'))
     return render_template('donor_dashboard.html',donor=donor_data,stats=stats,reqs=claim_requests,unclaimed_posts=unclaimed_posts)
+
 
 
 @app.route('/profile_donor')
@@ -449,16 +510,48 @@ def food_posts():
         email = session['email']
         ngo_query = db.collection('NGOs').where('email', '==', email).limit(1)
         ngo_docs = list(ngo_query.stream())
-
         if ngo_docs:
             ngo_data = ngo_docs[0].to_dict()
+
+    
+        ngo_lat=ngo_data.get('ngo_lat')
+        ngo_lng=ngo_data.get('ngo_lng')
+
+        lat_range = 30 / 111  # approx km per degree latitude
+        lng_range = 30 / (111 * math.cos(math.radians(ngo_lat)))
+
+        min_lat = ngo_lat - lat_range
+        max_lat = ngo_lat + lat_range
+        min_lng = ngo_lng - lng_range
+        max_lng = ngo_lng + lng_range
+
+        donor_query = (db.collection("Donors").where("donor_lat", ">=", min_lat).where("donor_lat", "<=", max_lat))
+
+        donor_docs = donor_query.stream()
+        nearby_donors_data = []
+
+        for donor in donor_docs:
+            donor_data = donor.to_dict()
+
+            if not donor_data.get("donor_lng"):
+                continue
+
+            distance = calculate_distance_km(
+                donor_data["donor_lat"], donor_data["donor_lng"],
+                ngo_lat, ngo_lng
+            )
+
+            if distance <= 30:
+                donor_data["distance"] = round(distance, 2)
+                nearby_donors_data.append(donor_data) 
+        
         posts_ref = db.collection('food_posts')
         docs = posts_ref.stream()
         posts = []
         for doc in docs:
-            post = doc.to_dict()
+            post = doc.to_dict() 
             post['id'] = doc.id
-            if post['city'].lower() == session['city'].lower() and post['claimed'] == False:
+            if post['email'] in [donor['email'] for donor in nearby_donors_data]:
                 posts.append(post)
         if request.method == 'POST':
             post_id = request.form['post_id']
