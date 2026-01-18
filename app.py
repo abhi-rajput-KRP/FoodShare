@@ -233,7 +233,8 @@ def donor_dashboard():
 
         # NGO has requested
         else:
-            claim_requests.append(post)
+            if not post.get('claim_accepted'):
+                claim_requests.append(post)
     email= session.get('email')
     donor=[]
     posts_ref = db.collection('food_posts').where('email', '==', email)
@@ -441,7 +442,7 @@ def ngo_register():
         }
 
         headers = {
-            "User-Agent": "FoodShare/1.0"
+            "User-Agent": "FoodDonation/1.0"
         }
 
         # Fetch JSON from API
