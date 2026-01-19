@@ -51,26 +51,11 @@ def donor_register():
         session['lat'] = donor_lat
         session['lng'] = donor_lng
 
-        url = "https://nominatim.openstreetmap.org/reverse"
-
-        params = {
-            "lat": donor_lat,
-            "lon": donor_lng,
-            "format": "json"
-        }
-
-        headers = {
-            "User-Agent": "FoodShare/1.0"
-        }
-
         # Fetch JSON from API
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()  # raises error if request failed
-
-        data = response.json()  # Parse JSON into Python dict
-
+        API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
+        resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={donor_lat}&lon={donor_lng}&limit=1&appid={API_key}").json()[0]
         # Extract address
-        location = data.get("display_name")
+        location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
         session['location'] = location
         try:
             user = auth.create_user(
@@ -445,15 +430,10 @@ def ngo_register():
             "User-Agent": "FoodDonation/1.0"
         }
 
-        # Fetch JSON from API
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()  # raises error if request failed
-
-        data = response.json()  # Parse JSON into Python dict
-
+        API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
+        resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={ngo_lat}&lon={ngo_lng}&limit=1&appid={API_key}").json()[0]
         # Extract address
-        location = data.get("display_name")
-        session['location'] = location
+        location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
         try:
             user = auth.create_user(
                 email=email,
