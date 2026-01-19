@@ -50,13 +50,15 @@ def donor_register():
         donor_lng = float(donor_lng) if donor_lng else None
         session['lat'] = donor_lat
         session['lng'] = donor_lng
-
-        # Fetch JSON from API
-        API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
-        resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={donor_lat}&lon={donor_lng}&limit=1&appid={API_key}").json()[0]
+        try : 
+            # Fetch JSON from API
+            API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
+            resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={donor_lat}&lon={donor_lng}&limit=1&appid={API_key}").json()[0]
         # Extract address
-        location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
-        session['location'] = location
+            location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
+            session['location'] = location
+        except:
+            return render_template('location_error.html',route='donor_register')
         try:
             user = auth.create_user(
                 email=email,
@@ -418,22 +420,14 @@ def ngo_register():
 
         ngo_lat = float(ngo_lat) if ngo_lat else None
         ngo_lng = float(ngo_lng) if ngo_lng else None
-        url = "https://nominatim.openstreetmap.org/reverse"
 
-        params = {
-            "lat": ngo_lat,
-            "lon": ngo_lng,
-            "format": "json"
-        }
-
-        headers = {
-            "User-Agent": "FoodDonation/1.0"
-        }
-
-        API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
-        resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={ngo_lat}&lon={ngo_lng}&limit=1&appid={API_key}").json()[0]
-        # Extract address
-        location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
+        try:
+            API_key = dotenv.get_key('.env','OP_WEATHER_API_KEY')
+            resp = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={ngo_lat}&lon={ngo_lng}&limit=1&appid={API_key}").json()[0]
+            # Extract address
+            location = f"{resp.get('name')} , {resp.get('state')} , {resp.get('country')}"
+        except:
+            return render_template('location_error.html',route = 'ngo_register')
         try:
             user = auth.create_user(
                 email=email,

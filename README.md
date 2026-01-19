@@ -72,6 +72,7 @@ FoodShare/
 │   ├── pickup2.html
 │   ├── ngo_invalid.html
 │   ├── error.html
+│   ├── location_error.html
 │   ├── claim.html
 │   └── static/
 │       ├── favicon.ico
