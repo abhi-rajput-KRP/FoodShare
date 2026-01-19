@@ -193,12 +193,15 @@ def donor_dashboard():
         posts.append(data)
     
     serves=0
+    total_donation = 0
     for i in posts:
-        serves=serves+int(i['quantity'])
+        if i.get('pickup_status') == "completed":
+            total_donation +=1
+            serves=serves+int(i['quantity'])
     points=serves*10
     
     stats = {
-        "total_donations": len(posts),
+        "total_donations": total_donation,
         "points_earned": points,
         "people_fed": serves,
     }
@@ -267,7 +270,8 @@ def profile_donor():
     
     serves=0
     for i in posts:
-        serves=serves+int(i['quantity'])
+        if i.get('pickup_status') == "completed":
+            serves=serves+int(i['quantity'])
     points=serves*10
     
     stats = {
