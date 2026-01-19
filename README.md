@@ -68,6 +68,8 @@ FoodShare/
 │   ├── ngo_register.html
 │   ├── profile_ngo.html
 │   ├── donor_invalid.html
+│   ├── ngos_nearby.html
+│   ├── pickup2.html
 │   ├── ngo_invalid.html
 │   ├── error.html
 │   ├── claim.html
