@@ -631,14 +631,14 @@
 
     // SAME ICONS AS ngos_nearby
     const donorIcon = L.divIcon({
-      html: `<i class="bi bi-person-raised-hand text-primary" style="font-size:28px;"></i>`,
+      html: `<i class="bi bi-building-fill text-success" style="font-size:28px;"></i>`,
       className: "leaflet-bootstrap-icon",
       iconSize: [28, 28],
       iconAnchor: [14, 28]
     });
 
     const ngoIcon = L.divIcon({
-      html: `<i class="bi bi-building-fill text-success" style="font-size:28px;"></i>`,
+      html: `<i class="bi bi-person-raised-hand text-primary" style="font-size:28px;"></i>`,
       className: "leaflet-bootstrap-icon",
       iconSize: [28, 28],
       iconAnchor: [14, 28]
@@ -663,18 +663,23 @@
       // Donor marker
       L.marker(donor{{ loop.index }}, { icon: donorIcon })
         .addTo(map{{ loop.index }})
-        .bindPopup("<b>Donor Location</b>");
+        .bindPopup(`
+          <b>Donor Location</b><br><br>
+          <a target="_blank"
+             href="https://www.google.com/maps/dir/?api=1&origin=${ngo{{ loop.index }}[0]},${ngo{{ loop.index }}[1]}&destination=${donor{{ loop.index }}[0]},${donor{{ loop.index }}[1]}">
+            Open Directions
+          </a>
+        `);
+        
 
       // NGO marker + directions link
       L.marker(ngo{{ loop.index }}, { icon: ngoIcon })
         .addTo(map{{ loop.index }})
-        .bindPopup(`
-          <b>NGO Location</b><br><br>
-          <a target="_blank"
+        .bindPopup(`<b>NGO Location </b><br><br>
+        <a target="_blank"
              href="https://www.google.com/maps/dir/?api=1&origin=${donor{{ loop.index }}[0]},${donor{{ loop.index }}[1]}&destination=${ngo{{ loop.index }}[0]},${ngo{{ loop.index }}[1]}">
             Open Directions
-          </a>
-        `);
+          </a>`);
 
       // Fit map to both points
       map{{ loop.index }}.fitBounds([
