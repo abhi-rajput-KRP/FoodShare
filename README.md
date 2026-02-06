@@ -97,7 +97,9 @@ source venv/bin/activate
 ```
 
 ### 2. Install Dependencies
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 ### 3. Configure enviornment variables
 ```
@@ -113,7 +115,9 @@ OP_WEATHER_API_KEY = "open whether api keay"
 
 
 ### 4. Run the Application
-`python app.py`
+```
+python app.py
+```
 
 <h2>How the Risk Model Works </h2>
 
