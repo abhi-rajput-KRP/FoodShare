@@ -1,9 +1,6 @@
 <h1>FoodShare – Food Donation Platform</h1>
 <h4>FoodShare is a web application that connects food donors with nearby NGOs to reduce food waste and hunger. Donors can post surplus food with details and photos, while NGOs can browse and claim safe, available food in their city. An integrated machine learning model estimates spoilage risk based on food type, temperature and time, helping ensure that only safe food is distributed.</h4>
 
-<h3>🔗 Live Demo: </h3>
-[Visit Application](https://foodshare-donation.onrender.com)
-
 <h2>FEATURES</h2>
 
 * <h3>Donor dashboard</h3>
